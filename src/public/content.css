@@ -1,0 +1,69 @@
+#extension-iframe {
+  border-radius: 0.5rem;
+}
+
+#extension-handlebar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+}
+
+#handlebar-highlight {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+#extension-handlebar:hover > #handlebar-highlight {
+  background-color: rgb(0, 132, 255);
+}
+
+#extension-handlebar:active > #handlebar-highlight {
+  background-color: rgb(0, 132, 255);
+}
+
+#extension-handlebar:not(:has(#handlebar-highlight)) {
+  margin-left: 3px;
+}
+
+#extension-handlebar:hover:not(:has(#handlebar-highlight)) {
+  background-color: rgb(0, 132, 255);
+}
+
+#extension-handlebar:active:not(:has(#handlebar-highlight)) {
+  background-color: rgb(0, 132, 255);
+}
+
+.handlebar-svg {
+  fill: rgb(58, 58, 58);
+}
+
+#open-handlebar-svg {
+  transform: rotate(180deg);
+}
+
+#extension-handlebar:hover #drag-handlebar-svg {
+  fill: rgb(0, 132, 255);
+}
+
+#extension-handlebar:active #drag-handlebar-svg {
+  fill: rgb(0, 132, 255);
+}
+
+#extension-handlebar:hover > #open-handlebar-svg {
+  fill: white;
+}
+
+#extension-handlebar:active > #open-handlebar-svg {
+  fill: white;
+}
+
+.line-highlight-green {
+  background-color: rgba(46, 160, 67, 0.15) !important;
+}
+
+.line-highlight-red {
+  background-color: rgba(244, 67, 54, 0.15) !important;
+}

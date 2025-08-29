@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles for the extension */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+#root {
+  height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal overflow in code blocks */
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Ensure prose content doesn't overflow */
+.prose {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Ensure all text content wraps properly */
+.prose * {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Ensure all containers respect width constraints */
+.container,
+.p-4,
+.px-4 {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Handle long strings and inline code */
+code,
+.font-mono {
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
+/* Ensure buttons and interactive elements don't overflow */
+button,
+input,
+textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
