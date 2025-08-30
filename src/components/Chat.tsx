@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
+import { useStorageSetting } from '@/hooks/useStorageSetting';
 import { IoSend } from 'react-icons/io5';
 import { KeyboardEvent, useState } from 'react';
 import type { MessageBubble } from '@/types/chat';
@@ -29,6 +30,25 @@ export function Chat({
 }: ChatProps) {
   const [messages, _] = useState<MessageBubble[]>(sampleMessages(pageData));
   const [input, setInput] = useState('');
+
+  // Use custom hooks for storage settings
+  const {
+    value: apiKey,
+    setValue: setApiKey,
+    saveToStorage: saveApiKey
+  } = useStorageSetting({
+    key: 'apiKey',
+    defaultValue: ''
+  });
+
+  const {
+    value: model,
+    setValue: setModel,
+    saveToStorage: saveModel
+  } = useStorageSetting({
+    key: 'model',
+    defaultValue: 'openai/gpt-4o-mini'
+  });
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -98,9 +118,17 @@ export function Chat({
             onKeyDown={handleKeyDown}
           />
           <div className="flex items-end justify-between">
-            <Popover>
+            <Popover
+              onOpenChange={(open) => {
+                // Save to storage when popover closes
+                if (!open) {
+                  saveApiKey();
+                  saveModel();
+                }
+              }}
+            >
               <PopoverTrigger className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10">
-                Model not configured
+                {model ? model : 'Model not configured'}
               </PopoverTrigger>
               <PopoverContent className="bg-lc-popover-bg text-lc-primary border-none text-xs">
                 <div className="grid gap-4">
@@ -126,6 +154,8 @@ export function Chat({
                       </Label>
                       <Input
                         id="apiKey"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
                         defaultValue=""
                         className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
                       />
@@ -136,6 +166,8 @@ export function Chat({
                       </Label>
                       <Input
                         id="model"
+                        value={model}
+                        onChange={(e) => setModel(e.target.value)}
                         defaultValue="openai/gpt-4o-mini"
                         className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
                       />
