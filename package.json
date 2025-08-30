@@ -1,40 +1,41 @@
 {
-    "name": "crx-coding-agent",
-    "private": true,
-    "version": "0.1.0",
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build:dev": "rm -rf dist/ && tsc && vite build --mode development",
-        "build": "rm -rf dist/ && tsc && vite build",
-        "preview": "vite preview",
-        "lint": "eslint src/",
-        "lint:fix": "eslint src/ --fix"
-    },
-    "dependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
-    },
-    "devDependencies": {
-        "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-        "@types/chrome": "^0.0.224",
-        "@types/react": "^18.0.17",
-        "@types/react-dom": "^18.0.6",
-        "@typescript-eslint/eslint-plugin": "^8.41.0",
-        "@typescript-eslint/parser": "^8.41.0",
-        "@vitejs/plugin-react": "^2.1.0",
-        "autoprefixer": "^10.4.12",
-        "eslint": "^9.34.0",
-        "eslint-plugin-import": "^2.32.0",
-        "eslint-plugin-jsx-a11y": "^6.10.2",
-        "eslint-plugin-react": "^7.37.5",
-        "eslint-plugin-react-hooks": "^5.2.0",
-        "monaco-editor": "^0.52.2",
-        "postcss": "^8.4.16",
-        "prettier": "^3.6.2",
-        "prettier-plugin-tailwindcss": "^0.6.14",
-        "tailwindcss": "^3.1.8",
-        "typescript": "^4.6.4",
-        "vite": "^3.1.0"
-    }
+  "name": "crx-coding-agent",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development vite build --mode development --watch",
+    "dev:server": "vite",
+    "build": "rm -rf dist/ && tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/chrome": "^0.0.224",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "@vitejs/plugin-react": "^2.1.0",
+    "autoprefixer": "^10.4.12",
+    "eslint": "^9.34.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "hot-reload-extension-vite": "^1.0.13",
+    "monaco-editor": "^0.52.2",
+    "postcss": "^8.4.16",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^3.1.8",
+    "typescript": "^4.6.4",
+    "vite": "^3.1.0"
+  }
 }
