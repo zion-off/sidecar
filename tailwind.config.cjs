@@ -1,12 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class',
+  darkMode: ['class', 'class'],
   content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
         'lc-primary': 'hsl(0, 0%, 96%)',
         'lc-fg': 'hsl(0,0%,24%)',
+        'lc-popover-bg': 'hsl(0,0%,20%)',
+        'lc-textarea-bg': 'hsl(0,0%,19%)',
         'lc-fg-hover': 'hsl(0,0%,26%)',
         'lc-bg': 'hsl(0,0%,16%)',
         'lc-border': 'hsl(0,0%,10%)',
@@ -22,10 +24,8 @@ module.exports = {
         'lc-md-bg-hover': 'hsl(40,26%,27%)',
         'lc-hd-fg-hover': 'hsl(348,100%,71%)',
         'lc-hd-bg-hover': 'hsl(350,25%,28%)',
-
         'lc-green-button': 'hsl(140,61%,45%)',
         'lc-green-button-hover': 'hsl(140,61%,50%)',
-
         'github-bg': 'hsl(210, 12%, 6%)',
         'github-bg-hover': 'hsl(210, 12%, 9%)',
         'google-bg': 'hsl(215, 82%, 51%)',
@@ -34,7 +34,6 @@ module.exports = {
         'discord-bg-hover': 'hsl(235, 86%, 68%)',
         'twitch-bg': 'hsl(264, 100%, 64%)',
         'twitch-bg-hover': 'hsl(264, 100%, 68%)',
-
         'lc-border-light': 'hsl(220,23%,97%)',
         'lc-bg-light': 'hsl(0,0%,100%)',
         'lc-fg-light': 'hsl(240,8%,96%)',
@@ -42,29 +41,67 @@ module.exports = {
         'lc-fg-message-light': 'hsl(240,8%,95%)',
         'lc-text-light': 'hsl(0,0%,15%)',
         'lc-green-button-hover-light': 'hsl(140,61%, 40%)',
-
         'lc-ez-fg-light': 'hsl(173,97%, 35%)',
         'lc-ez-bg-light': 'hsl(168, 41%, 93%)',
         'lc-ez-bg-hover-light': 'hsl(168, 41%, 90%)',
-
         'lc-md-fg-light': 'hsl(43, 100%, 50%)',
         'lc-md-bg-light': 'hsl(38, 100%, 94%)',
         'lc-md-bg-hover-light': 'hsl(38, 100%, 91%)',
-
         'lc-hd-fg-light': 'hsl(349, 100%, 59%)',
         'lc-hd-bg-light': 'hsl(355, 100%, 95%)',
         'lc-hd-bg-hover-light': 'hsl(355, 100%, 92%)',
-
         'lc-fg-modal': 'hsl(0,0%,100%, 11%)',
         'lc-fg-modal-hover': 'hsl(0,0%,100%, 15%)',
-
         'lc-fg-modal-light': 'hsl(180,9%,89%, 100%)',
-        'lc-fg-modal-hover-light': 'hsl(180,9%,85%, 100%)'
+        'lc-fg-modal-hover-light': 'hsl(180,9%,85%, 100%)',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))'
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))'
+        },
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))'
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))'
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))'
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))'
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))'
+        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        chart: {
+          1: 'hsl(var(--chart-1))',
+          2: 'hsl(var(--chart-2))',
+          3: 'hsl(var(--chart-3))',
+          4: 'hsl(var(--chart-4))',
+          5: 'hsl(var(--chart-5))'
+        }
       },
       borderRadius: {
-        'lc-mini': '21px'
+        'lc-mini': '21px',
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)'
       }
     }
   },
-  plugins: []
+  plugins: [require('tailwindcss-animate')]
 };

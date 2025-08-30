@@ -74,7 +74,7 @@ function App() {
   }
 
   return (
-    <div className="flex h-full w-full max-w-full flex-col bg-lc-bg">
+    <div className="flex h-full w-full max-w-full flex-col bg-lc-text-light">
       <div className="flex h-9 items-center gap-1 bg-lc-fg p-1 px-3">
         <HiMiniSparkles className="text-yellow-500" />
         <h2 className="text-lc-primary text-[14px] font-medium">Agent</h2>
