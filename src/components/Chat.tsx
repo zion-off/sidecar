@@ -29,7 +29,12 @@ export function Chat({
   showSuggestions,
   resolveSuggestion
 }: ChatProps) {
-  const [messages, setMessages] = useState<MessageType[]>([]);
+  const [messages, setMessages] = useState<MessageType[]>([
+    {
+      role: 'assistant',
+      content: `Hi, how can I help you with ${pageData.title}?`
+    }
+  ]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -67,7 +72,7 @@ export function Chat({
     await streamChatCompletion({
       apiKey,
       model,
-      messages: [buildSystemPrompt(pageData), ...messages, userMessage],
+      messages: [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
       onChunk: (_, fullMessage) => {
         setStreamingMessage(fullMessage);
       },
