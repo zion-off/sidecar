@@ -31,8 +31,8 @@ body {
   overflow-x: hidden;
 }
 
-/* Prevent horizontal overflow in code blocks */
-pre {
+/* Prevent horizontal overflow in code blocks (except in markdown content) */
+pre:not(.markdown-content pre):not(.hljs) {
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -144,10 +144,15 @@ textarea {
 /* Markdown content styles for chat bubbles */
 .markdown-content {
   @apply text-inherit;
+  max-width: 100%;
+  overflow: hidden;
+  min-width: 0; /* Allows flex child to shrink below content size */
 }
 
 .markdown-content p {
-  @apply mb-2 last:mb-0;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content h1,
@@ -156,30 +161,37 @@ textarea {
 .markdown-content h4,
 .markdown-content h5,
 .markdown-content h6 {
-  @apply font-bold first:mt-0;
+  @apply font-bold;
+  margin: 0.5rem 0;
+  padding: 0;
+  font-size: inherit;
+  line-height: inherit;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content h1 {
-  @apply text-xl;
+  font-size: inherit;
 }
 
 .markdown-content h2 {
-  @apply text-lg;
+  font-size: inherit;
 }
 
 .markdown-content h3 {
-  @apply text-base;
+  font-size: inherit;
 }
 
 .markdown-content h4,
 .markdown-content h5,
 .markdown-content h6 {
-  @apply text-sm;
+  font-size: inherit;
 }
 
 .markdown-content ul,
 .markdown-content ol {
-  @apply mb-2 pl-4;
+  @apply pl-4;
+  margin: 0;
 }
 
 .markdown-content ul {
@@ -191,27 +203,49 @@ textarea {
 }
 
 .markdown-content li {
-  @apply mb-1;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content blockquote {
-  @apply my-2 border-l-4 border-gray-300 pl-4 italic;
+  @apply border-l-4 border-gray-300 pl-4 italic;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content code {
-  @apply rounded bg-gray-200 px-1 py-0.5 font-mono text-sm text-gray-800;
+  @apply font-mono text-xs;
+  background: none;
+  color: inherit;
+  padding: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content pre {
-  @apply my-2 overflow-x-auto rounded-md bg-gray-800 p-3 text-gray-100;
+  @apply overflow-x-auto rounded-md bg-gray-800 p-3 text-gray-100;
+  margin: 0.5rem 0;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0; /* Allows the pre to shrink */
 }
 
 .markdown-content pre code {
   @apply rounded-none bg-transparent p-0 text-inherit;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
 }
 
 .markdown-content a {
   @apply text-blue-500 underline;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .markdown-content a:hover {
@@ -227,11 +261,16 @@ textarea {
 }
 
 .markdown-content hr {
-  @apply my-4 border-t border-gray-300;
+  @apply border-t border-gray-300;
+  margin: 0;
 }
 
 .markdown-content table {
-  @apply my-2 w-full border-collapse border border-gray-300;
+  @apply w-full border-collapse border border-gray-300;
+  margin: 0;
+  overflow-x: auto;
+  display: block;
+  white-space: nowrap;
 }
 
 .markdown-content th,
@@ -245,7 +284,8 @@ textarea {
 
 /* Dark theme adjustments for assistant messages */
 .markdown-content.dark code {
-  @apply bg-gray-700 text-gray-200;
+  background: none;
+  color: inherit;
 }
 
 .markdown-content.dark blockquote {
@@ -263,4 +303,122 @@ textarea {
 
 .markdown-content.dark th {
   @apply bg-gray-700;
+}
+
+/* Syntax highlighting styles */
+.markdown-content .hljs {
+  @apply overflow-x-auto rounded-md p-3 text-sm;
+  background: #0d1117 !important;
+  color: #c9d1d9 !important;
+  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+  line-height: 1.5;
+  margin: 0.5rem 0;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+  max-width: 100%;
+  width: 100%;
+  min-width: 0; /* Allows the hljs to shrink */
+}
+
+.markdown-content .hljs code {
+  @apply bg-transparent p-0 text-inherit;
+  white-space: pre;
+  word-wrap: normal;
+  overflow-wrap: normal;
+}
+
+/* Adjust pre styles for hljs */
+.markdown-content pre.hljs {
+  @apply bg-transparent;
+  min-width: 0; /* Allows the pre to shrink */
+}
+
+/* Custom highlight.js overrides for better chat integration */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-link {
+  color: #ff7b72 !important;
+}
+
+.hljs-function .hljs-keyword {
+  color: #d2a8ff !important;
+}
+
+.hljs-subst {
+  color: #c9d1d9 !important;
+}
+
+.hljs-string,
+.hljs-title,
+.hljs-name,
+.hljs-type,
+.hljs-attribute,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition,
+.hljs-variable,
+.hljs-template-tag,
+.hljs-template-variable {
+  color: #a5d6ff !important;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion,
+.hljs-meta {
+  color: #8b949e !important;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-title,
+.hljs-section,
+.hljs-doctag,
+.hljs-type,
+.hljs-name,
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+/* Light theme for user messages */
+.markdown-content:not(.dark) .hljs {
+  background: #f6f8fa !important;
+  color: #24292f !important;
+}
+
+.markdown-content:not(.dark) .hljs-keyword,
+.markdown-content:not(.dark) .hljs-selector-tag,
+.markdown-content:not(.dark) .hljs-literal,
+.markdown-content:not(.dark) .hljs-section,
+.markdown-content:not(.dark) .hljs-link {
+  color: #cf222e !important;
+}
+
+.markdown-content:not(.dark) .hljs-string,
+.markdown-content:not(.dark) .hljs-title,
+.markdown-content:not(.dark) .hljs-name,
+.markdown-content:not(.dark) .hljs-type,
+.markdown-content:not(.dark) .hljs-attribute,
+.markdown-content:not(.dark) .hljs-symbol,
+.markdown-content:not(.dark) .hljs-bullet,
+.markdown-content:not(.dark) .hljs-addition,
+.markdown-content:not(.dark) .hljs-variable,
+.markdown-content:not(.dark) .hljs-template-tag,
+.markdown-content:not(.dark) .hljs-template-variable {
+  color: #0550ae !important;
+}
+
+.markdown-content:not(.dark) .hljs-comment,
+.markdown-content:not(.dark) .hljs-quote,
+.markdown-content:not(.dark) .hljs-deletion,
+.markdown-content:not(.dark) .hljs-meta {
+  color: #656d76 !important;
 }

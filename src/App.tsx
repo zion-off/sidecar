@@ -65,11 +65,9 @@ function App() {
 
   if (!problemData) {
     return (
-      <div className="flex h-full items-center justify-center bg-gray-50">
+      <div className="flex h-full items-center justify-center bg-lc-text-light">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500"></div>
-          <h3 className="mb-2 text-lg font-medium text-gray-900">🤖 Agent</h3>
-          <p className="text-gray-600">Waiting for page data...</p>
+          <p className="animate-pulse text-white">Loading problem...</p>
         </div>
       </div>
     );
