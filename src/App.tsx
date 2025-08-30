@@ -1,9 +1,10 @@
+import { HiMiniSparkles } from 'react-icons/hi2';
 import { useEffect, useState } from 'react';
 import { InjectionStatus, PageData, Suggestion } from '@/types/editor';
+import { Chat } from '@/components/Chat';
 
 function App() {
   const [problemData, setProblemData] = useState<PageData | null>(null);
-  const [editorContent, setEditorContent] = useState<string>('');
   const [injectionStatus, setInjectionStatus] = useState<InjectionStatus>({});
 
   const [generatedCode, setGeneratedCode] = useState<string>(`def twoSum(nums, target):
@@ -35,7 +36,7 @@ function App() {
   const generateAndShowSuggestion = () => {
     if (!problemData) return;
 
-    const originalCode = editorContent;
+    const originalCode = problemData.editorContent || '';
     const suggestedCode = `def twoSum(nums, target):
     """
     Given an array of integers nums and an integer target,
@@ -69,7 +70,6 @@ function App() {
       switch (type) {
         case 'PAGE_DATA_UPDATE':
           setProblemData(data);
-          setEditorContent(data.editorContent || '');
           break;
         case 'INJECTION_RESULT':
           setInjectionStatus({
@@ -101,13 +101,15 @@ function App() {
   }
 
   return (
-    <div className="h-full w-full max-w-full overflow-auto bg-white">
-      <div className="sticky top-0 border-b border-blue-200 bg-blue-50 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🤖</span>
-          <h2 className="font-semibold text-blue-900">Agent</h2>
+    <div className="h-full w-full max-w-full overflow-auto bg-lc-bg">
+      <div className="sticky top-0 flex h-9 items-center bg-lc-fg p-1">
+        <div className="flex items-center gap-1 px-2">
+          <HiMiniSparkles className="text-yellow-500" />
+          <h2 className="text-lc-primary text-[14px] font-medium">Agent</h2>
         </div>
       </div>
+
+      <Chat />
 
       <div className="w-full max-w-full p-4">
         {injectionStatus.message && (
