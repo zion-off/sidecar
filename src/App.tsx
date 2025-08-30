@@ -77,10 +77,10 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex h-full w-full max-w-full flex-col bg-lc-text-light">
+      <div className="flex h-full w-full max-w-full flex-col overflow-hidden bg-lc-text-light">
         <div className="flex h-9 items-center gap-1 bg-lc-fg p-1 px-3">
           <HiMiniSparkles className="text-yellow-500" />
-          <h2 className="text-lc-primary text-[14px] font-[600]">Agent</h2>
+          <h2 className="text-[14px] font-[600] text-lc-primary">Agent</h2>
         </div>
 
         <Chat
