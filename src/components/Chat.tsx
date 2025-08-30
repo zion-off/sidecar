@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
+import { IoSend } from 'react-icons/io5';
 import { KeyboardEvent, useState } from 'react';
 import type { MessageBubble } from '@/types/chat';
 import type { InjectionStatus, PageData } from '@/types/editor';
 import { Bubble } from '@/components/Bubble';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { sampleMessages } from '@/utils/messaging';
 
 interface ChatProps {
@@ -85,13 +89,67 @@ export function Chat({
           </div>
         </div>
 
-        <textarea
-          className="sticky bottom-0 w-full rounded-md bg-lc-fg p-2 text-white transition-shadow duration-200 ease-in-out placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Type your message here..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
+        <div className="bg-lc-textarea-bg rounded-md p-2 drop-shadow-md transition-shadow duration-200 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500">
+          <textarea
+            className="sticky bottom-0 w-full resize-none bg-transparent px-1 text-white placeholder:text-neutral-500 focus:outline-none"
+            placeholder="Type your message here..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <div className="flex items-end justify-between">
+            <Popover>
+              <PopoverTrigger className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10">
+                Model not configured
+              </PopoverTrigger>
+              <PopoverContent className="bg-lc-popover-bg text-lc-primary border-none text-xs">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium leading-none">OpenRouter Configuration</h4>
+                    <p className="text-muted-foreground">
+                      Set the OpenRouter API key and model configuration. Get your API key from{' '}
+                      <a
+                        href="https://openrouter.ai"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 underline"
+                      >
+                        here
+                      </a>
+                      .
+                    </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Label htmlFor="apiKey" className="text-xs">
+                        API Key
+                      </Label>
+                      <Input
+                        id="apiKey"
+                        defaultValue=""
+                        className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 items-center gap-4">
+                      <Label htmlFor="model" className="text-xs">
+                        Model
+                      </Label>
+                      <Input
+                        id="model"
+                        defaultValue="openai/gpt-4o-mini"
+                        className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <button className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10">
+              <IoSend />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
