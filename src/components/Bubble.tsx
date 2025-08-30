@@ -1,4 +1,6 @@
-export function Bubble({ message, role }: { message: string; role: 'user' | 'assistant' }) {
+import { MessageType } from '@/types/chat';
+
+export function Bubble({ content, role }: MessageType) {
   return (
     <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
       <div
@@ -6,7 +8,7 @@ export function Bubble({ message, role }: { message: string; role: 'user' | 'ass
           role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
         }`}
       >
-        {message}
+        {content}
       </div>
     </div>
   );
