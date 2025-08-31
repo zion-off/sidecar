@@ -1,32 +1,85 @@
+import { useStorageSetting } from '@/hooks/useStorageSetting';
+import { streamChatCompletion } from '@/open-router/chat';
 import { IoSend } from 'react-icons/io5';
+import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent } from 'react';
+import type { MessageType } from '@/types/chat';
+import type { PageData } from '@/types/editor';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
+import { buildSystemPrompt } from '@/utils/prompt-builder';
 
 interface ChatInputProps {
   input: string;
   setInput: (_value: string) => void;
   isStreaming: boolean;
-  apiKey: string;
-  setApiKey: (_value: string) => void;
-  saveApiKey: () => void;
-  model: string;
-  setModel: (_value: string) => void;
-  saveModel: () => void;
-  onSubmit: (_e: FormEvent) => void;
+  setIsStreaming: (_value: boolean) => void;
+  setStreamingMessage: (_value: string) => void;
+  messages: MessageType[];
+  setMessages: (_fn: (_prev: MessageType[]) => MessageType[]) => void;
+  pageData: PageData;
 }
 
 export function ChatInput({
   input,
   setInput,
   isStreaming,
-  apiKey,
-  setApiKey,
-  saveApiKey,
-  model,
-  setModel,
-  saveModel,
-  onSubmit
+  setIsStreaming,
+  setStreamingMessage,
+  messages,
+  setMessages,
+  pageData
 }: ChatInputProps) {
+  // Use custom hooks for storage settings
+  const {
+    value: apiKey,
+    setValue: setApiKey,
+    saveToStorage: saveApiKey
+  } = useStorageSetting({
+    key: 'apiKey',
+    defaultValue: ''
+  });
+
+  const {
+    value: model,
+    setValue: setModel,
+    saveToStorage: saveModel
+  } = useStorageSetting({
+    key: 'model',
+    defaultValue: 'openai/gpt-4o-mini'
+  });
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    if (!input.trim() || !apiKey || isStreaming) return;
+
+    const userMessage: MessageType = { content: input.trim(), role: 'user' };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsStreaming(true);
+    setStreamingMessage('');
+
+    await streamChatCompletion({
+      apiKey,
+      model,
+      messages: [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
+      onChunk: (_, fullMessage) => {
+        setStreamingMessage(fullMessage);
+      },
+      onComplete: (fullMessage) => {
+        const assistantMessage: MessageType = { content: fullMessage, role: 'assistant' };
+        setMessages((prev) => [...prev, assistantMessage]);
+        setIsStreaming(false);
+        setStreamingMessage('');
+      },
+      onError: (error) => {
+        toast.warning(error.message || 'An error occurred while fetching the response.');
+        setIsStreaming(false);
+        setStreamingMessage('');
+      }
+    });
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -40,7 +93,7 @@ export function ChatInput({
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleSubmit}>
       <div className="rounded-md bg-lc-textarea-bg p-2 drop-shadow-md transition-shadow duration-200 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500">
         <textarea
           className="sticky bottom-0 w-full resize-none bg-transparent px-1 text-white placeholder:text-neutral-500 focus:outline-none"
