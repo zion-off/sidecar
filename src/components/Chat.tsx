@@ -26,7 +26,7 @@ export function Chat({
   const [messages, setMessages] = useState<MessageType[]>([
     {
       role: 'assistant',
-      content: `Hi, how can I help you with ${pageData.title}?`
+      content: `Need help with <strong>${pageData.title.replace(/^\d+\.\s*/, '')}</strong>?`
     }
   ]);
   const [input, setInput] = useState('');
