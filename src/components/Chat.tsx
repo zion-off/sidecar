@@ -2,6 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useStorageSetting } from '@/hooks/useStorageSetting';
 import { IoSend } from 'react-icons/io5';
+import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent, useState } from 'react';
 import type { MessageType } from '@/types/chat';
 import type { InjectionStatus, PageData } from '@/types/editor';
@@ -83,7 +84,7 @@ export function Chat({
         setStreamingMessage('');
       },
       onError: (error) => {
-        console.error('Error sending message:', error);
+        toast.warning(error.message || 'An error occurred while fetching the response.');
         setIsStreaming(false);
         setStreamingMessage('');
       }
