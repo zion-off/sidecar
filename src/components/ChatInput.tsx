@@ -75,9 +75,19 @@ export function ChatInput({
     await streamChatCompletion({
       apiKey,
       model: modelResponse.data.id,
+      reasoning: config.reasoning,
       messages: [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
       onChunk: (_, fullMessage) => {
         setStreamingMessage(fullMessage);
+      },
+      onReasoning: (reasoning) => {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.role === 'assistant' && last.type === 'reasoning') {
+            return [...prev.slice(0, -1), { ...last, content: reasoning }];
+          }
+          return [...prev, { role: 'assistant', content: reasoning, type: 'reasoning' }];
+        });
       },
       onComplete: (fullMessage) => {
         const assistantMessage: MessageType = { content: fullMessage, role: 'assistant' };

@@ -15,6 +15,8 @@ module.exports = {
         'lc-fg-hover': 'hsl(0,0%,26%)',
         'lc-bg': 'hsl(0,0%,16%)',
         'lc-border': 'hsl(0,0%,10%)',
+        'table-heading': 'var(--table-heading)',
+        'pill-border': 'var(--pill-border)',
         'lc-ez-fg': 'hsl(173,100%,36%)',
         'lc-ez-bg': 'hsl(171,18%,20%)',
         'lc-md-fg': 'hsl(43,99%,55%)',

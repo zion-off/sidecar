@@ -38,8 +38,10 @@ export type ModelEndpointsResponse = {
   data: ModelData;
 };
 
+export type ReasoningEffort = '' | 'low' | 'medium' | 'high';
+
 export type ModelConfig = {
   tools: boolean;
-  reasoning: '' | 'low' | 'medium' | 'high';
+  reasoning: ReasoningEffort;
   mode: 'learn' | 'agent';
 };
