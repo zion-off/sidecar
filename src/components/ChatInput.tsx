@@ -120,7 +120,7 @@ export function ChatInput({
       <div
         className={
           `relative rounded-md bg-lc-textarea-bg p-2 drop-shadow-md transition-shadow duration-200 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500 ` +
-          'before:content-["" ] before:duration-[2000ms] before:pointer-events-none before:absolute before:inset-0 before:rounded-md before:opacity-0 before:shadow-[0_0_6px_2px_rgba(255,255,255,0.10),0_0_14px_4px_rgba(255,255,255,0.05)] before:transition-opacity' +
+          'before:transition-duration-[2000ms] before:pointer-events-none before:absolute before:inset-0 before:rounded-md before:opacity-0 before:shadow-[0_0_6px_2px_rgba(255,255,255,0.10),0_0_14px_4px_rgba(255,255,255,0.05)] before:transition-opacity before:content-[""]' +
           (isStreaming ? ' before:animate-glow-pulse before:opacity-100' : '')
         }
       >

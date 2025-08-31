@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Agent",
+  "name": "Sidecar",
   "version": "0.1.0",
   "description": "Coding Agent for LeetCode.",
+  "icons": {
+    "128": "logo-100.png",
+    "256": "logo-200.png"
+  },
   "permissions": ["storage", "scripting"],
   "host_permissions": ["https://leetcode.com/problems/*"],
   "background": {

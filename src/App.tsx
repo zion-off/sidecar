@@ -77,7 +77,7 @@ function App() {
       <Toaster />
       <div className="flex h-9 items-center gap-1 bg-lc-popover-bg p-1 px-3">
         <HiMiniSparkles className="text-yellow-500" />
-        <h2 className="text-[14px] font-[600] text-lc-primary">Agent</h2>
+        <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
       </div>
 
       <Chat
