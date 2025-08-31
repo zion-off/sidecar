@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import { useState } from 'react';
+import { useAutoSmoothScroll } from '@/hooks/useAutoSmoothScroll';
+import { useRef, useState } from 'react';
 import type { MessageType } from '@/types/chat';
 import type { InjectionStatus, PageData } from '@/types/editor';
 import { Bubble } from '@/components/Bubble';
@@ -32,10 +33,20 @@ export function Chat({
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
+  // Using globalThis to avoid issues if DOM lib not fully included in tsconfig
+  const scrollRef = useRef<globalThis.HTMLDivElement | null>(null);
+
+  // Auto smooth scroll while streaming (and upon completion if user is at bottom)
+  useAutoSmoothScroll(
+    scrollRef,
+    [messages.length, streamingMessage],
+    true, // always enabled; hook respects user manual scroll position
+    { bottomThreshold: 96 }
+  );
 
   return (
     <div className="flex h-full w-full max-w-full flex-col justify-between overflow-hidden p-4">
-      <div className="min-h-0 flex-1 overflow-y-auto bg-lc-text-light">
+      <div ref={scrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-lc-text-light">
         {messages.map((msg, index) => (
           <Bubble key={index} content={msg.content} role={msg.role} type={msg.type} />
         ))}

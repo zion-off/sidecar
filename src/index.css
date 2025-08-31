@@ -442,3 +442,12 @@ textarea {
 .markdown-content:not(.dark) .hljs-meta {
   color: #656d76 !important;
 }
+
+/* Hide scrollbar utility (used for chat scroll container) */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE & old Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
