@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface ChatConfigurationProps {
   apiKey: string;
@@ -37,7 +38,7 @@ export function ChatConfiguration({
           <div className="space-y-2">
             <h4 className="font-medium leading-none">OpenRouter Configuration</h4>
             <p className="text-muted-foreground">
-              Set the OpenRouter API key and model configuration. Get your API key from{' '}
+              Set the OpenRouter API key and model configuration. Get your API key{' '}
               <a
                 href="https://openrouter.ai"
                 target="_blank"
@@ -71,6 +72,34 @@ export function ChatConfiguration({
                 onChange={(e) => setModel(e.target.value)}
                 className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
               />
+            </div>
+            <div className="grid grid-cols-3 items-center gap-4">
+              <Label htmlFor="reasoning" className="text-xs">
+                Reasoning
+              </Label>
+              <ToggleGroup type="single" className="col-span-2 grid grid-cols-3">
+                <ToggleGroupItem
+                  value="low"
+                  aria-label="Toggle low"
+                  className="text-xxs col-span-1 h-8 rounded-br-none rounded-tr-none font-mono hover:bg-lc-fg"
+                >
+                  low
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="medium"
+                  aria-label="Toggle medium"
+                  className="text-xxs col-span-1 h-8 rounded-none font-mono hover:bg-lc-fg"
+                >
+                  med
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="high"
+                  aria-label="Toggle high"
+                  className="text-xxs col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono hover:bg-lc-fg"
+                >
+                  high
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
           </div>
         </div>
