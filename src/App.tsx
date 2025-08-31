@@ -1,5 +1,5 @@
-// ...existing code...
 import { HiMiniSparkles } from 'react-icons/hi2';
+import { Toaster } from 'sonner';
 import { useCallback, useEffect, useState } from 'react';
 import { InjectionStatus, PageData, Suggestion } from '@/types/editor';
 import { Chat } from '@/components/Chat';
@@ -10,7 +10,6 @@ function App() {
   const [problemData, setProblemData] = useState<PageData | null>(null);
   const [injectionStatus, setInjectionStatus] = useState<InjectionStatus>({});
   const [activeSuggestion, setActiveSuggestion] = useState<boolean>(false);
-  // ...existing code...
 
   const sendCodeToEditor = useCallback((code: string) => {
     setInjectionStatus({});
@@ -75,6 +74,7 @@ function App() {
 
   return (
     <div className="flex h-full w-full max-w-full flex-col overflow-hidden bg-lc-text-light">
+      <Toaster />
       <div className="flex h-9 items-center gap-1 bg-lc-fg p-1 px-3">
         <HiMiniSparkles className="text-yellow-500" />
         <h2 className="text-[14px] font-[600] text-lc-primary">Agent</h2>
