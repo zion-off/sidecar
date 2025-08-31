@@ -75,7 +75,7 @@ function App() {
   return (
     <div className="flex h-full w-full max-w-full flex-col overflow-hidden bg-lc-text-light">
       <Toaster />
-      <div className="flex h-9 items-center gap-1 bg-lc-fg p-1 px-3">
+      <div className="flex h-9 items-center gap-1 bg-lc-popover-bg p-1 px-3">
         <HiMiniSparkles className="text-yellow-500" />
         <h2 className="text-[14px] font-[600] text-lc-primary">Agent</h2>
       </div>

@@ -6,6 +6,7 @@ import { FormEvent, KeyboardEvent } from 'react';
 import type { MessageType } from '@/types/chat';
 import type { PageData } from '@/types/editor';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildSystemPrompt } from '@/utils/prompt-builder';
 
 interface ChatInputProps {
@@ -45,7 +46,7 @@ export function ChatInput({
     saveToStorage: saveModel
   } = useStorageSetting({
     key: 'model',
-    defaultValue: 'openai/gpt-4o-mini'
+    defaultValue: ''
   });
 
   async function handleSubmit(e: FormEvent) {
@@ -104,18 +105,35 @@ export function ChatInput({
           disabled={isStreaming}
         />
         <div className="flex items-end justify-between">
-          <ChatConfiguration
-            apiKey={apiKey}
-            setApiKey={setApiKey}
-            saveApiKey={saveApiKey}
-            model={model}
-            setModel={setModel}
-            saveModel={saveModel}
-          />
+          <div className="flex items-center gap-1">
+            <ChatConfiguration
+              apiKey={apiKey}
+              setApiKey={setApiKey}
+              saveApiKey={saveApiKey}
+              model={model}
+              setModel={setModel}
+              saveModel={saveModel}
+            />
+            <Select>
+              <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-white/60 hover:bg-white/10 focus:ring-0">
+                <SelectValue placeholder="Mode" className="w-fit border-none" />
+              </SelectTrigger>
+              <SelectContent className="border-none bg-lc-popover-bg text-xs text-lc-primary">
+                <SelectGroup>
+                  <SelectItem value="learn" className="text-xs focus:bg-white/10 focus:text-white">
+                    Learn
+                  </SelectItem>
+                  <SelectItem value="agent" className="text-xs focus:bg-white/10 focus:text-white">
+                    Agent
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
 
           <button
             type="submit"
-            className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10 disabled:opacity-50"
+            className="cursor-pointer rounded-md px-1 py-1 text-white/60 hover:bg-white/10 disabled:opacity-50"
             disabled={isStreaming || !input.trim() || !apiKey}
           >
             <IoSend />

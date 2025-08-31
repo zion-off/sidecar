@@ -4,6 +4,9 @@ module.exports = {
   content: ['./src/**/*.{html,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      fontSize: {
+        xxs: '0.675rem'
+      },
       colors: {
         'lc-primary': 'hsl(0, 0%, 96%)',
         'lc-fg': 'hsl(0,0%,24%)',
