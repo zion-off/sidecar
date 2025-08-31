@@ -270,13 +270,16 @@ textarea {
 }
 
 .markdown-content table {
-  /* Let the table shrink-to-fit instead of always full width, while keeping rounded corners visible */
+  /* Make table independently horizontally scrollable (like code blocks) */
   @apply border-pill-border overflow-hidden rounded-sm border;
   margin: 0.5rem 0;
-  display: inline-table; /* shrink-wrap width; use block wrapper for horizontal scroll if needed */
+  display: block; /* Needed so overflow-x works */
+  width: max-content; /* Natural width; allows scroll if wider than container */
+  max-width: 100%; /* Prevent exceeding container */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-collapse: separate;
   border-spacing: 0;
-  max-width: 100%;
 }
 
 .markdown-content th,
@@ -286,6 +289,10 @@ textarea {
 
 .markdown-content th {
   @apply bg-table-heading font-bold;
+  /* Preserve whole words in table headings; allow horizontal scroll instead of breaking mid-word */
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: nowrap; /* Prevent wrapping within headings; remove if multi-line wrapping is desired */
 }
 
 /* Rounded corner helpers (only header row gets top rounding; body first row stays square) */
