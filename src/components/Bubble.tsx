@@ -1,7 +1,9 @@
 import { MessageType } from '@/types/chat';
 import { parseMarkdown } from '@/utils/markdown';
+import { stripControlPreamble } from '@/utils/messaging';
 
 export function Bubble({ content, role, type = 'content' }: MessageType) {
+  const safe = stripControlPreamble(content);
   return (
     <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
       <div
@@ -9,7 +11,7 @@ export function Bubble({ content, role, type = 'content' }: MessageType) {
       >
         <div
           className={`markdown-content ${role === 'assistant' ? 'dark' : ''}`}
-          dangerouslySetInnerHTML={{ __html: parseMarkdown(content) }}
+          dangerouslySetInnerHTML={{ __html: parseMarkdown(safe) }}
         />
       </div>
     </div>

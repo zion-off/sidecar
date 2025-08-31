@@ -31,3 +31,12 @@ export const sampleMessages = (pageData: PageData | null): MessageType[] => {
     { content: 'I need help with my code.', role: 'user' }
   ];
 };
+
+export function stripControlPreamble(raw: string): string {
+  if (!raw) return raw;
+  const CONTROL_PRE = /^(?:\s*<\|start\|>assistant<\|channel\|>[a-zA-Z0-9_-]+<\|message\|>)+/;
+  if (CONTROL_PRE.test(raw)) {
+    return raw.replace(CONTROL_PRE, '');
+  }
+  return raw;
+}

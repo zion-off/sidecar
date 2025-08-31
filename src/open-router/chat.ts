@@ -52,8 +52,7 @@ export async function streamChatCompletion({
     let buffer = '';
     let fullMessage = '';
     let reasoningAccumulated = '';
-    let strippedControlPreamble = false;
-    let controlPreambleBuffer = '';
+    // Control sequence stripping moved to UI layer (Bubble) for consistency.
 
     try {
       while (true) {
@@ -75,34 +74,9 @@ export async function streamChatCompletion({
 
             try {
               const parsed = JSON.parse(data);
-              let content = parsed.choices?.[0]?.delta?.content;
+              const content = parsed.choices?.[0]?.delta?.content;
               const reasoningDetails = parsed.choices?.[0]?.delta?.reasoning_details;
               if (content) {
-                // Handle control preamble stripping for reasoning mode
-                if (reasoning && !strippedControlPreamble) {
-                  controlPreambleBuffer += content;
-                  const CONTROL_SEQUENCE = '<|start|>assistant<|channel|>final<|message|>';
-
-                  if (controlPreambleBuffer.includes(CONTROL_SEQUENCE)) {
-                    // Found the complete control sequence, strip it and output the rest
-                    const afterSequence = controlPreambleBuffer.substring(
-                      controlPreambleBuffer.indexOf(CONTROL_SEQUENCE) + CONTROL_SEQUENCE.length
-                    );
-                    content = afterSequence;
-                    strippedControlPreamble = true;
-                    controlPreambleBuffer = '';
-                  } else if (controlPreambleBuffer.length > CONTROL_SEQUENCE.length) {
-                    // Buffer is longer than the sequence without containing it,
-                    // so the sequence isn't there - output everything
-                    content = controlPreambleBuffer;
-                    strippedControlPreamble = true;
-                    controlPreambleBuffer = '';
-                  } else {
-                    // Still might be building up the sequence, don't output yet
-                    content = '';
-                  }
-                }
-
                 if (content) {
                   fullMessage += content;
                   onChunk(content, fullMessage);
