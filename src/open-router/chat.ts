@@ -1,29 +1,46 @@
-import { StreamChatCompletionOptions } from '@/types/chat';
+import { StreamChatCompletionBody, StreamChatCompletionOptions } from '@/types/chat';
 
 export async function streamChatCompletion({
   apiKey,
   model,
+  reasoning,
   messages,
   onChunk,
+  onReasoning,
   onComplete,
   onError
 }: StreamChatCompletionOptions): Promise<void> {
   try {
+    const body: StreamChatCompletionBody = {
+      model: model,
+      messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
+      stream: true
+    };
+
+    if (reasoning) {
+      body['reasoning'] = {
+        effort: reasoning
+      };
+    }
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: model,
-        messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
-        stream: true
-      })
+      body: JSON.stringify(body)
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const raw = await response.text();
+      let detail = raw;
+      try {
+        const parsed = JSON.parse(raw);
+        detail = parsed?.error?.message || detail;
+      } catch {
+        // ignore JSON parse errors, fallback to raw
+      }
+      throw new Error(`HTTP error! status: ${response.status}. ${detail}`);
     }
 
     const reader = response.body?.getReader();
@@ -34,6 +51,9 @@ export async function streamChatCompletion({
     const decoder = new TextDecoder();
     let buffer = '';
     let fullMessage = '';
+    let reasoningAccumulated = '';
+    let strippedControlPreamble = false;
+    let controlPreambleBuffer = '';
 
     try {
       while (true) {
@@ -55,10 +75,62 @@ export async function streamChatCompletion({
 
             try {
               const parsed = JSON.parse(data);
-              const content = parsed.choices[0].delta.content;
+              let content = parsed.choices?.[0]?.delta?.content;
+              const reasoningDetails = parsed.choices?.[0]?.delta?.reasoning_details;
               if (content) {
-                fullMessage += content;
-                onChunk(content, fullMessage);
+                // Handle control preamble stripping for reasoning mode
+                if (reasoning && !strippedControlPreamble) {
+                  controlPreambleBuffer += content;
+                  const CONTROL_SEQUENCE = '<|start|>assistant<|channel|>final<|message|>';
+
+                  if (controlPreambleBuffer.includes(CONTROL_SEQUENCE)) {
+                    // Found the complete control sequence, strip it and output the rest
+                    const afterSequence = controlPreambleBuffer.substring(
+                      controlPreambleBuffer.indexOf(CONTROL_SEQUENCE) + CONTROL_SEQUENCE.length
+                    );
+                    content = afterSequence;
+                    strippedControlPreamble = true;
+                    controlPreambleBuffer = '';
+                  } else if (controlPreambleBuffer.length > CONTROL_SEQUENCE.length) {
+                    // Buffer is longer than the sequence without containing it,
+                    // so the sequence isn't there - output everything
+                    content = controlPreambleBuffer;
+                    strippedControlPreamble = true;
+                    controlPreambleBuffer = '';
+                  } else {
+                    // Still might be building up the sequence, don't output yet
+                    content = '';
+                  }
+                }
+
+                if (content) {
+                  fullMessage += content;
+                  onChunk(content, fullMessage);
+                }
+              }
+              if (reasoningDetails) {
+                let deltaText = '';
+                if (Array.isArray(reasoningDetails)) {
+                  // Each element may be an object like { type: 'reasoning.text', text: '...', ... } or a raw string
+                  for (const item of reasoningDetails) {
+                    if (item && typeof item === 'object') {
+                      if (typeof item.text === 'string') deltaText += item.text;
+                    } else if (typeof item === 'string') {
+                      deltaText += item;
+                    }
+                  }
+                } else if (typeof reasoningDetails === 'object') {
+                  // Single object case
+                  if (typeof reasoningDetails.text === 'string') {
+                    deltaText += reasoningDetails.text;
+                  }
+                } else if (typeof reasoningDetails === 'string') {
+                  deltaText += reasoningDetails;
+                }
+                if (deltaText) {
+                  reasoningAccumulated += deltaText;
+                  onReasoning?.(reasoningAccumulated);
+                }
               }
             } catch {
               // Ignore invalid JSON

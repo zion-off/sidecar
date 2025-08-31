@@ -103,6 +103,8 @@ textarea {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --table-heading: rgba(255, 255, 255, 0.07);
+    --pill-border: rgba(247, 250, 255, 0.12);
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -129,6 +131,8 @@ textarea {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --table-heading: rgba(255, 255, 255, 0.07);
+    --pill-border: rgba(247, 250, 255, 0.12);
   }
 }
 
@@ -191,7 +195,7 @@ textarea {
 .markdown-content ul,
 .markdown-content ol {
   @apply pl-4;
-  margin: 0;
+  margin: 0.5rem 0;
 }
 
 .markdown-content ul {
@@ -203,14 +207,14 @@ textarea {
 }
 
 .markdown-content li {
-  margin: 0;
+  margin: 0.5rem 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 .markdown-content blockquote {
   @apply border-l-4 border-gray-300 pl-4 italic;
-  margin: 0;
+  margin: 0.5rem 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -262,24 +266,40 @@ textarea {
 
 .markdown-content hr {
   @apply border-t border-gray-300;
-  margin: 0;
+  margin: 0.5rem 0;
 }
 
 .markdown-content table {
-  @apply w-full border-collapse border border-gray-300;
-  margin: 0;
-  overflow-x: auto;
-  display: block;
-  white-space: nowrap;
+  /* Let the table shrink-to-fit instead of always full width, while keeping rounded corners visible */
+  @apply border-pill-border overflow-hidden rounded-sm border;
+  margin: 0.5rem 0;
+  display: inline-table; /* shrink-wrap width; use block wrapper for horizontal scroll if needed */
+  border-collapse: separate;
+  border-spacing: 0;
+  max-width: 100%;
 }
 
 .markdown-content th,
 .markdown-content td {
-  @apply border border-gray-300 px-2 py-1 text-left;
+  @apply border-pill-border border px-2 py-1 text-left;
 }
 
 .markdown-content th {
-  @apply bg-gray-100 font-bold;
+  @apply bg-table-heading font-bold;
+}
+
+/* Rounded corner helpers (only header row gets top rounding; body first row stays square) */
+.markdown-content thead tr:first-child th:first-child {
+  @apply rounded-tl-sm;
+}
+.markdown-content thead tr:first-child th:last-child {
+  @apply rounded-tr-sm;
+}
+.markdown-content tr:last-child td:first-child {
+  @apply rounded-bl-sm;
+}
+.markdown-content tr:last-child td:last-child {
+  @apply rounded-br-sm;
 }
 
 /* Dark theme adjustments for assistant messages */
@@ -292,17 +312,10 @@ textarea {
   @apply border-gray-600;
 }
 
-.markdown-content.dark table {
-  @apply border-gray-600;
-}
-
-.markdown-content.dark th,
-.markdown-content.dark td {
-  @apply border-gray-600;
-}
+/* In dark mode, keep the same pill-border color (already applied above) */
 
 .markdown-content.dark th {
-  @apply bg-gray-700;
+  @apply bg-table-heading;
 }
 
 /* Syntax highlighting styles */

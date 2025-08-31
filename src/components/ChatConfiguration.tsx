@@ -105,7 +105,7 @@ export function ChatConfiguration({
       <PopoverContent className="border-none bg-lc-popover-bg text-xs text-lc-primary">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">OpenRouter Configuration</h4>
+            <h4 className="text-sm font-medium leading-none">OpenRouter Configuration</h4>
             <p className="text-muted-foreground">
               Set the OpenRouter API key and model configuration. Get your API key{' '}
               <a
@@ -125,10 +125,11 @@ export function ChatConfiguration({
                 API Key
               </Label>
               <Input
+                type="password"
                 id="apiKey"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
+                className="col-span-2 h-8 border-white/10 text-xs focus-visible:ring-0"
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
@@ -143,7 +144,7 @@ export function ChatConfiguration({
                   setModelDirty(true);
                 }}
                 placeholder="anthropic/claude-3-sonnet"
-                className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
+                className="col-span-2 h-8 border-white/10 text-xs placeholder:text-xs focus-visible:ring-0"
               />
             </div>
             <div className="grid grid-cols-3 items-center gap-4">
@@ -155,26 +156,28 @@ export function ChatConfiguration({
                 className="col-span-2 grid grid-cols-3"
                 disabled={!supportsReasoning}
                 value={config.reasoning}
-                onValueChange={(value) => setConfig({ ...config, reasoning: value as ModelConfig['reasoning'] })}
+                onValueChange={(value) =>
+                  setConfig({ ...config, reasoning: (value || '') as ModelConfig['reasoning'] })
+                }
               >
                 <ToggleGroupItem
                   value="low"
                   aria-label="Toggle low"
-                  className="text-xxs col-span-1 h-8 rounded-br-none rounded-tr-none font-mono hover:bg-lc-fg"
+                  className="text-xxs col-span-1 h-8 rounded-br-none rounded-tr-none font-mono hover:bg-lc-fg data-[state=on]:bg-white/20"
                 >
                   low
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="medium"
                   aria-label="Toggle medium"
-                  className="text-xxs col-span-1 h-8 rounded-none font-mono hover:bg-lc-fg"
+                  className="text-xxs col-span-1 h-8 rounded-none font-mono hover:bg-lc-fg data-[state=on]:bg-white/20"
                 >
                   med
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="high"
                   aria-label="Toggle high"
-                  className="text-xxs col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono hover:bg-lc-fg"
+                  className="text-xxs col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono hover:bg-lc-fg data-[state=on]:bg-white/20"
                 >
                   high
                 </ToggleGroupItem>
