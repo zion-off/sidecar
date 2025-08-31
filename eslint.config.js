@@ -26,6 +26,7 @@ export default [
         MouseEvent: 'readonly',
         KeyboardEvent: 'readonly',
         HTMLElement: 'readonly',
+        HTMLDivElement: 'readonly',
         Element: 'readonly',
         MutationObserver: 'readonly',
         Node: 'readonly',

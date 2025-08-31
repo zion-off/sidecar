@@ -33,8 +33,7 @@ export function Chat({
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
-  // Using globalThis to avoid issues if DOM lib not fully included in tsconfig
-  const scrollRef = useRef<globalThis.HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Auto smooth scroll while streaming (and upon completion if user is at bottom)
   useAutoSmoothScroll(
