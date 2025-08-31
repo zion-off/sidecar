@@ -1,3 +1,9 @@
+import { useDebounce } from '@/hooks/useDebounce';
+import { useStorageSetting } from '@/hooks/useStorageSetting';
+import { getModelEndpoints } from '@/open-router/model';
+import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
+import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -7,31 +13,94 @@ interface ChatConfigurationProps {
   apiKey: string;
   setApiKey: (_value: string) => void;
   saveApiKey: () => void;
-  model: string;
-  setModel: (_value: string) => void;
-  saveModel: () => void;
+  modelResponse: ModelEndpointsResponse | null;
+  setModelResponse: (_value: ModelEndpointsResponse | null) => void;
+  saveModelResponse: () => void;
 }
 
 export function ChatConfiguration({
   apiKey,
   setApiKey,
   saveApiKey,
-  model,
-  setModel,
-  saveModel
+  modelResponse,
+  setModelResponse,
+  saveModelResponse
 }: ChatConfigurationProps) {
+  const [modelInput, setModelInput] = useState('');
+  const [isLoadingModel, setIsLoadingModel] = useState(false);
+  const [modelDirty, setModelDirty] = useState(false);
+  const debouncedModelInput = useDebounce(modelInput, 500);
+
+  const {
+    value: config,
+    setValue: setConfig,
+    saveToStorage: saveConfig
+  } = useStorageSetting<ModelConfig>({
+    key: 'config',
+    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
+  });
+
+  useEffect(() => {
+    if (modelResponse?.data?.id) {
+      setModelInput(modelResponse.data.id);
+    }
+  }, [modelResponse]);
+
+  useEffect(() => {
+    if (!modelDirty) return;
+
+    if (!debouncedModelInput.trim()) {
+      setModelResponse(null);
+      return;
+    }
+
+    const parts = debouncedModelInput.split('/');
+    if (parts.length !== 2) {
+      setModelResponse(null);
+      return;
+    }
+
+    const [author, slug] = parts;
+    setIsLoadingModel(true);
+
+    getModelEndpoints(author, slug)
+      .then((response) => {
+        setModelResponse(response);
+        const supportedParams = response.data.endpoints[0]?.supported_parameters || [];
+        const newConfig: ModelConfig = {
+          tools: supportedParams.includes('tools'),
+          reasoning: supportedParams.includes('reasoning') ? config.reasoning : '',
+          mode: supportedParams.includes('tools') ? config.mode : 'learn'
+        };
+        setConfig(newConfig);
+      })
+      .catch((error) => {
+        toast.error(`Failed to fetch model endpoints: ${error.message || 'Unknown error'}`);
+        setModelResponse(null);
+      })
+      .finally(() => {
+        setIsLoadingModel(false);
+        setModelDirty(false);
+      });
+  }, [debouncedModelInput, setModelResponse, config.reasoning, config.mode, setConfig, modelDirty]);
+
+  const displayName =
+    modelResponse?.data.id.split('/').slice(0, 40) || (modelInput ? modelInput : 'Model not configured');
+  const supportsReasoning = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('reasoning') || false;
+
   return (
     <Popover
       onOpenChange={(open) => {
         // Save to storage when popover closes
         if (!open) {
           saveApiKey();
-          saveModel();
+          saveModelResponse();
+          saveConfig();
         }
       }}
     >
       <PopoverTrigger className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10">
-        {model ? model : 'Model not configured'}
+        {isLoadingModel ? 'Loading...' : displayName}
       </PopoverTrigger>
       <PopoverContent className="border-none bg-lc-popover-bg text-xs text-lc-primary">
         <div className="grid gap-4">
@@ -68,8 +137,12 @@ export function ChatConfiguration({
               </Label>
               <Input
                 id="model"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
+                value={modelInput}
+                onChange={(e) => {
+                  setModelInput(e.target.value);
+                  setModelDirty(true);
+                }}
+                placeholder="anthropic/claude-3-sonnet"
                 className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
               />
             </div>
@@ -77,7 +150,13 @@ export function ChatConfiguration({
               <Label htmlFor="reasoning" className="text-xs">
                 Reasoning
               </Label>
-              <ToggleGroup type="single" className="col-span-2 grid grid-cols-3">
+              <ToggleGroup
+                type="single"
+                className="col-span-2 grid grid-cols-3"
+                disabled={!supportsReasoning}
+                value={config.reasoning}
+                onValueChange={(value) => setConfig({ ...config, reasoning: value as ModelConfig['reasoning'] })}
+              >
                 <ToggleGroupItem
                   value="low"
                   aria-label="Toggle low"

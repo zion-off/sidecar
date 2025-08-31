@@ -37,3 +37,9 @@ export type ModelData = {
 export type ModelEndpointsResponse = {
   data: ModelData;
 };
+
+export type ModelConfig = {
+  tools: boolean;
+  reasoning: '' | 'low' | 'medium' | 'high';
+  mode: 'learn' | 'agent';
+};
