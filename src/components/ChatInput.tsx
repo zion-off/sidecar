@@ -1,0 +1,124 @@
+import { IoSend } from 'react-icons/io5';
+import { FormEvent, KeyboardEvent } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+interface ChatInputProps {
+  input: string;
+  setInput: (_value: string) => void;
+  isStreaming: boolean;
+  apiKey: string;
+  setApiKey: (_value: string) => void;
+  saveApiKey: () => void;
+  model: string;
+  setModel: (_value: string) => void;
+  saveModel: () => void;
+  onSubmit: (_e: FormEvent) => void;
+}
+
+export function ChatInput({
+  input,
+  setInput,
+  isStreaming,
+  apiKey,
+  setApiKey,
+  saveApiKey,
+  model,
+  setModel,
+  saveModel,
+  onSubmit
+}: ChatInputProps) {
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      // Create a synthetic form event to submit the form
+      const form = e.currentTarget.closest('form');
+      if (form) {
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent);
+      }
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <div className="rounded-md bg-lc-textarea-bg p-2 drop-shadow-md transition-shadow duration-200 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500">
+        <textarea
+          className="sticky bottom-0 w-full resize-none bg-transparent px-1 text-white placeholder:text-neutral-500 focus:outline-none"
+          placeholder="Type your message here..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isStreaming}
+        />
+        <div className="flex items-end justify-between">
+          <Popover
+            onOpenChange={(open) => {
+              // Save to storage when popover closes
+              if (!open) {
+                saveApiKey();
+                saveModel();
+              }
+            }}
+          >
+            <PopoverTrigger className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10">
+              {model ? model : 'Model not configured'}
+            </PopoverTrigger>
+            <PopoverContent className="border-none bg-lc-popover-bg text-xs text-lc-primary">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium leading-none">OpenRouter Configuration</h4>
+                  <p className="text-muted-foreground">
+                    Set the OpenRouter API key and model configuration. Get your API key from{' '}
+                    <a
+                      href="https://openrouter.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      here
+                    </a>
+                    .
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <div className="grid grid-cols-3 items-center gap-4">
+                    <Label htmlFor="apiKey" className="text-xs">
+                      API Key
+                    </Label>
+                    <Input
+                      id="apiKey"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 items-center gap-4">
+                    <Label htmlFor="model" className="text-xs">
+                      Model
+                    </Label>
+                    <Input
+                      id="model"
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      className="col-span-2 h-8 border-white/10 text-sm focus-visible:ring-0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <button
+            type="submit"
+            className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10 disabled:opacity-50"
+            disabled={isStreaming || !input.trim() || !apiKey}
+          >
+            <IoSend />
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
