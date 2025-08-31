@@ -7,6 +7,19 @@ module.exports = {
       fontSize: {
         xxs: '0.675rem'
       },
+      keyframes: {
+        'glow-pulse': {
+          '0%, 100%': {
+            boxShadow: '0 0 6px 2px rgba(255,255,255,0.10), 0 0 14px 4px rgba(255,255,255,0.06)'
+          },
+          '50%': {
+            boxShadow: '0 0 10px 3px rgba(255,255,255,0.18), 0 0 22px 6px rgba(255,255,255,0.10)'
+          }
+        }
+      },
+      animation: {
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite'
+      },
       colors: {
         'lc-primary': 'hsl(0, 0%, 96%)',
         'lc-fg': 'hsl(0,0%,24%)',
