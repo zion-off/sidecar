@@ -7,7 +7,7 @@ export function Bubble({ content, role, type = 'content' }: MessageType) {
   return (
     <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
       <div
-        className={`overflow-hidden rounded-lg px-2 py-1 ${role === 'user' ? 'bg-blue-500 text-white' : `${type === 'reasoning' ? 'text-white/80' : 'text-white'}`}`}
+        className={`overflow-hidden rounded-lg px-2 py-1 ${role === 'user' ? 'bg-white/10 text-white' : `${type === 'reasoning' ? 'text-white/80' : 'text-white'}`}`}
       >
         <div
           className={`markdown-content ${role === 'assistant' ? 'dark' : ''}`}
