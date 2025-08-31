@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 import { useStorageSetting } from '@/hooks/useStorageSetting';
+import { streamChatCompletion } from '@/open-router/chat';
 import { toast } from 'sonner';
 import { FormEvent, useState } from 'react';
 import type { MessageType } from '@/types/chat';
 import type { InjectionStatus, PageData } from '@/types/editor';
 import { Bubble } from '@/components/Bubble';
 import { ChatInput } from '@/components/ChatInput';
-import { streamChatCompletion } from '@/utils/messaging';
 import { buildSystemPrompt } from '@/utils/prompt-builder';
 
 interface ChatProps {
