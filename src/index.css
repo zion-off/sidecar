@@ -221,22 +221,27 @@ textarea {
 
 .markdown-content code {
   @apply font-mono text-xs;
-  background: none;
-  color: inherit;
   padding: 0;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
+/* Base pre styling; avoid setting colors so hljs theme can control them */
 .markdown-content pre {
-  @apply overflow-x-auto rounded-md bg-gray-800 p-3 text-gray-100;
-  margin: 0.5rem 0;
+  @apply overflow-x-auto rounded-md px-4 py-3.5;
+  margin: 0.625rem 0; /* slightly more vertical space */
   white-space: pre;
   word-wrap: normal;
   overflow-wrap: normal;
   max-width: 100%;
   width: 100%;
   min-width: 0; /* Allows the pre to shrink */
+}
+
+/* Non-highlighted code blocks retain previous dark styling */
+/* Non-highlighted code blocks retain dark styling */
+.markdown-content pre:not(.hljs) {
+  @apply bg-gray-800 text-gray-100;
 }
 
 .markdown-content pre code {
@@ -310,14 +315,6 @@ textarea {
 }
 
 /* Dark theme adjustments for assistant messages */
-.markdown-content.dark code {
-  background: none;
-  color: inherit;
-}
-
-.markdown-content.dark blockquote {
-  @apply border-gray-600;
-}
 
 /* In dark mode, keep the same pill-border color (already applied above) */
 
@@ -326,122 +323,6 @@ textarea {
 }
 
 /* Syntax highlighting styles */
-.markdown-content .hljs {
-  @apply overflow-x-auto rounded-md p-3 text-sm;
-  background: #0d1117 !important;
-  color: #c9d1d9 !important;
-  font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
-  line-height: 1.5;
-  margin: 0.5rem 0;
-  white-space: pre;
-  word-wrap: normal;
-  overflow-wrap: normal;
-  max-width: 100%;
-  width: 100%;
-  min-width: 0; /* Allows the hljs to shrink */
-}
-
-.markdown-content .hljs code {
-  @apply bg-transparent p-0 text-inherit;
-  white-space: pre;
-  word-wrap: normal;
-  overflow-wrap: normal;
-}
-
-/* Adjust pre styles for hljs */
-.markdown-content pre.hljs {
-  @apply bg-transparent;
-  min-width: 0; /* Allows the pre to shrink */
-}
-
-/* Custom highlight.js overrides for better chat integration */
-.hljs-keyword,
-.hljs-selector-tag,
-.hljs-literal,
-.hljs-section,
-.hljs-link {
-  color: #ff7b72 !important;
-}
-
-.hljs-function .hljs-keyword {
-  color: #d2a8ff !important;
-}
-
-.hljs-subst {
-  color: #c9d1d9 !important;
-}
-
-.hljs-string,
-.hljs-title,
-.hljs-name,
-.hljs-type,
-.hljs-attribute,
-.hljs-symbol,
-.hljs-bullet,
-.hljs-addition,
-.hljs-variable,
-.hljs-template-tag,
-.hljs-template-variable {
-  color: #a5d6ff !important;
-}
-
-.hljs-comment,
-.hljs-quote,
-.hljs-deletion,
-.hljs-meta {
-  color: #8b949e !important;
-}
-
-.hljs-keyword,
-.hljs-selector-tag,
-.hljs-literal,
-.hljs-title,
-.hljs-section,
-.hljs-doctag,
-.hljs-type,
-.hljs-name,
-.hljs-strong {
-  font-weight: bold;
-}
-
-.hljs-emphasis {
-  font-style: italic;
-}
-
-/* Light theme for user messages */
-.markdown-content:not(.dark) .hljs {
-  background: #f6f8fa !important;
-  color: #24292f !important;
-}
-
-.markdown-content:not(.dark) .hljs-keyword,
-.markdown-content:not(.dark) .hljs-selector-tag,
-.markdown-content:not(.dark) .hljs-literal,
-.markdown-content:not(.dark) .hljs-section,
-.markdown-content:not(.dark) .hljs-link {
-  color: #cf222e !important;
-}
-
-.markdown-content:not(.dark) .hljs-string,
-.markdown-content:not(.dark) .hljs-title,
-.markdown-content:not(.dark) .hljs-name,
-.markdown-content:not(.dark) .hljs-type,
-.markdown-content:not(.dark) .hljs-attribute,
-.markdown-content:not(.dark) .hljs-symbol,
-.markdown-content:not(.dark) .hljs-bullet,
-.markdown-content:not(.dark) .hljs-addition,
-.markdown-content:not(.dark) .hljs-variable,
-.markdown-content:not(.dark) .hljs-template-tag,
-.markdown-content:not(.dark) .hljs-template-variable {
-  color: #0550ae !important;
-}
-
-.markdown-content:not(.dark) .hljs-comment,
-.markdown-content:not(.dark) .hljs-quote,
-.markdown-content:not(.dark) .hljs-deletion,
-.markdown-content:not(.dark) .hljs-meta {
-  color: #656d76 !important;
-}
 
 /* Hide scrollbar utility (used for chat scroll container) */
 .hide-scrollbar {
