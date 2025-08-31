@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent } from 'react';
 import type { MessageType } from '@/types/chat';
 import type { PageData } from '@/types/editor';
+import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildSystemPrompt } from '@/utils/prompt-builder';
@@ -41,18 +42,29 @@ export function ChatInput({
   });
 
   const {
-    value: model,
-    setValue: setModel,
-    saveToStorage: saveModel
-  } = useStorageSetting({
+    value: modelResponse,
+    setValue: setModelResponse,
+    saveToStorage: saveModelResponse
+  } = useStorageSetting<ModelEndpointsResponse | null>({
     key: 'model',
-    defaultValue: ''
+    defaultValue: null
   });
+
+  const {
+    value: config,
+    setValue: setConfig,
+    saveToStorage: saveConfig
+  } = useStorageSetting<ModelConfig>({
+    key: 'config',
+    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
+  });
+
+  const supportsTools = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('tools') || false;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (!input.trim() || !apiKey || isStreaming) return;
+    if (!input.trim() || !apiKey || isStreaming || !modelResponse) return;
 
     const userMessage: MessageType = { content: input.trim(), role: 'user' };
     setMessages((prev) => [...prev, userMessage]);
@@ -62,7 +74,7 @@ export function ChatInput({
 
     await streamChatCompletion({
       apiKey,
-      model,
+      model: modelResponse.data.id,
       messages: [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
       onChunk: (_, fullMessage) => {
         setStreamingMessage(fullMessage);
@@ -110,11 +122,19 @@ export function ChatInput({
               apiKey={apiKey}
               setApiKey={setApiKey}
               saveApiKey={saveApiKey}
-              model={model}
-              setModel={setModel}
-              saveModel={saveModel}
+              modelResponse={modelResponse}
+              setModelResponse={setModelResponse}
+              saveModelResponse={saveModelResponse}
             />
-            <Select>
+            <Select
+              value={config.mode}
+              onValueChange={(value) => setConfig({ ...config, mode: value as 'learn' | 'agent' })}
+              onOpenChange={(open) => {
+                if (!open) {
+                  saveConfig();
+                }
+              }}
+            >
               <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-white/60 hover:bg-white/10 focus:ring-0">
                 <SelectValue placeholder="Mode" className="w-fit border-none" />
               </SelectTrigger>
@@ -123,9 +143,11 @@ export function ChatInput({
                   <SelectItem value="learn" className="text-xs focus:bg-white/10 focus:text-white">
                     Learn
                   </SelectItem>
-                  <SelectItem value="agent" className="text-xs focus:bg-white/10 focus:text-white">
-                    Agent
-                  </SelectItem>
+                  {supportsTools && (
+                    <SelectItem value="agent" className="text-xs focus:bg-white/10 focus:text-white">
+                      Agent
+                    </SelectItem>
+                  )}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -134,7 +156,7 @@ export function ChatInput({
           <button
             type="submit"
             className="cursor-pointer rounded-md px-1 py-1 text-white/60 hover:bg-white/10 disabled:opacity-50"
-            disabled={isStreaming || !input.trim() || !apiKey}
+            disabled={isStreaming || !input.trim() || !apiKey || !modelResponse}
           >
             <IoSend />
           </button>
