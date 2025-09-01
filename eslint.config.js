@@ -29,6 +29,7 @@ export default [
         HTMLDivElement: 'readonly',
         Element: 'readonly',
         MutationObserver: 'readonly',
+        Response: 'readonly',
         Node: 'readonly',
         fetch: 'readonly',
         TextDecoder: 'readonly',

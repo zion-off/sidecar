@@ -1,16 +1,26 @@
-import { StreamChatCompletionBody, StreamChatCompletionOptions } from '@/types/chat';
+import type { MessageType, StreamChatCompletionBody, StreamChatCompletionOptions } from '@/types/chat';
+import { ReasoningEffort } from '@/types/open-router';
 
-export async function streamChatCompletion({
-  apiKey,
-  model,
-  reasoning,
-  messages,
-  onChunk,
-  onReasoning,
-  onComplete,
-  onError
-}: StreamChatCompletionOptions): Promise<void> {
-  try {
+export class ChatCompletion {
+  private apiKey: string;
+  private onChunk: StreamChatCompletionOptions['onChunk'];
+  private onReasoning: StreamChatCompletionOptions['onReasoning'];
+  private onComplete: StreamChatCompletionOptions['onComplete'];
+  private onError: StreamChatCompletionOptions['onError'];
+
+  constructor(options: Omit<StreamChatCompletionOptions, 'model' | 'reasoning' | 'messages'>) {
+    this.apiKey = options.apiKey;
+    this.onChunk = options.onChunk;
+    this.onReasoning = options.onReasoning;
+    this.onComplete = options.onComplete;
+    this.onError = options.onError;
+  }
+
+  private buildRequestBody(
+    model: string,
+    reasoning: ReasoningEffort,
+    messages: MessageType[]
+  ): StreamChatCompletionBody {
     const body: StreamChatCompletionBody = {
       model: model,
       messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
@@ -22,15 +32,21 @@ export async function streamChatCompletion({
         effort: reasoning
       };
     }
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    return body;
+  }
+
+  private async makeRequest(body: StreamChatCompletionBody): Promise<Response> {
+    return await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
     });
+  }
 
+  private async handleErrorResponse(response: Response): Promise<void> {
     if (!response.ok) {
       const raw = await response.text();
       let detail = raw;
@@ -42,6 +58,12 @@ export async function streamChatCompletion({
       }
       throw new Error(`HTTP error! status: ${response.status}. ${detail}`);
     }
+  }
+
+  private async safeProcessStream(model: string, reasoning: ReasoningEffort, messages: MessageType[]): Promise<void> {
+    const body = this.buildRequestBody(model, reasoning, messages);
+    const response = await this.makeRequest(body);
+    await this.handleErrorResponse(response);
 
     const reader = response.body?.getReader();
     if (!reader) {
@@ -52,7 +74,6 @@ export async function streamChatCompletion({
     let buffer = '';
     let fullMessage = '';
     let reasoningAccumulated = '';
-    // Control sequence stripping moved to UI layer (Bubble) for consistency.
 
     try {
       while (true) {
@@ -79,7 +100,7 @@ export async function streamChatCompletion({
               if (content) {
                 if (content) {
                   fullMessage += content;
-                  onChunk(content, fullMessage);
+                  this.onChunk(content, fullMessage);
                 }
               }
               if (reasoningDetails) {
@@ -103,7 +124,7 @@ export async function streamChatCompletion({
                 }
                 if (deltaText) {
                   reasoningAccumulated += deltaText;
-                  onReasoning?.(reasoningAccumulated);
+                  this.onReasoning?.(reasoningAccumulated);
                 }
               }
             } catch {
@@ -116,8 +137,14 @@ export async function streamChatCompletion({
       reader.cancel();
     }
 
-    onComplete(fullMessage);
-  } catch (error) {
-    onError(error instanceof Error ? error : new Error(String(error)));
+    this.onComplete(fullMessage);
+  }
+
+  public async processStream(model: string, reasoning: ReasoningEffort, messages: MessageType[]): Promise<void> {
+    try {
+      return await this.safeProcessStream(model, reasoning, messages);
+    } catch (error) {
+      this.onError(error instanceof Error ? error : new Error(String(error)));
+    }
   }
 }
