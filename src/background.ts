@@ -47,76 +47,72 @@ function injectionScript(codeToInject: string): boolean {
 }
 
 function showSuggestionScript(suggestion: { originalCode: string; suggestedCode: string }): void {
-  (async () => {
-    try {
-      const monacoInstance = window.monaco;
-      const editor = monacoInstance?.editor?.getEditors()[0];
-      if (!editor) return;
+  try {
+    const monacoInstance = window.monaco;
+    if (!monacoInstance) return;
 
-      if (typeof window.Diff === 'undefined') {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/diff/dist/diff.min.js';
-          script.onload = () => resolve();
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
+    const baseEditor = monacoInstance.editor.getEditors()[0];
+    if (!baseEditor) return;
+
+    // Clean up any previous diff session via existing resolveSuggestion
+    if (typeof window.resolveSuggestion === 'function') {
+      try {
+        window.resolveSuggestion(false);
+      } catch {
+        /* ignore */
       }
-      const Diff = window.Diff;
-      if (!Diff) return;
-
-      const model = editor.getModel();
-      if (model) {
-        const range = model.getFullModelRange();
-        editor.executeEdits('extension-suggestion-initial', [{ range, text: suggestion.suggestedCode }]);
-      }
-
-      const diff = Diff.diffLines(suggestion.originalCode, suggestion.suggestedCode);
-      const highlights: {
-        lineNumber: number;
-        className: 'green' | 'red';
-      }[] = [];
-      let currentLine = 1;
-
-      diff.forEach((part) => {
-        const lineCount = (part.value.match(/\n/g) || []).length;
-        if (part.added) {
-          for (let i = 0; i < lineCount; i++) {
-            highlights.push({
-              lineNumber: currentLine + i,
-              className: 'green'
-            });
-          }
-        }
-        if (!part.removed) {
-          currentLine += lineCount;
-        }
-      });
-
-      document.getElementById('extension-suggestion-buttons')?.remove();
-      if (!window.myExtensionDecorations) window.myExtensionDecorations = [];
-
-      const newDecorations = highlights.map((h) => ({
-        range: new monacoInstance.Range(h.lineNumber, 1, h.lineNumber, 1),
-        options: {
-          isWholeLine: true,
-          className: `line-highlight-${h.className}`
-        }
-      }));
-      const newDecorationIds = editor.deltaDecorations(window.myExtensionDecorations, newDecorations);
-      window.myExtensionDecorations = newDecorationIds;
-
-      window.resolveSuggestion = (isAccept: boolean) => {
-        const finalCode = isAccept ? suggestion.suggestedCode : suggestion.originalCode;
-        if (model)
-          editor.executeEdits('extension-suggestion-resolve', [{ range: model.getFullModelRange(), text: finalCode }]);
-        window.myExtensionDecorations = editor.deltaDecorations(window.myExtensionDecorations || [], []);
-        window.postMessage({ type: 'SUGGESTION_RESOLVED_FROM_PAGE' }, '*');
-      };
-    } catch (e) {
-      console.error('[Extension] Error showing suggestion:', e);
     }
-  })();
+
+    const baseModel = baseEditor.getModel();
+    const language = baseModel?.getLanguageId?.() || 'plaintext';
+
+    const originalModel = monacoInstance.editor.createModel(suggestion.originalCode, language);
+    const modifiedModel = monacoInstance.editor.createModel(suggestion.suggestedCode, language);
+
+    const baseDom = baseEditor.getDomNode();
+    if (!baseDom || !baseDom.parentElement) return;
+
+    // Hide original single editor
+    baseDom.style.display = 'none';
+
+    const diffContainerId = 'extension-inline-diff-container';
+    let diffContainer = document.getElementById(diffContainerId);
+    if (diffContainer) diffContainer.remove();
+    diffContainer = document.createElement('div');
+    diffContainer.id = diffContainerId;
+    diffContainer.style.width = '100%';
+    diffContainer.style.height = baseDom.style.height || '100%';
+    diffContainer.style.position = 'relative';
+    baseDom.parentElement.appendChild(diffContainer);
+
+    const diffEditor = monacoInstance.editor.createDiffEditor(diffContainer, {
+      automaticLayout: true,
+      renderSideBySide: false,
+      originalEditable: false,
+      hideUnchangedRegions: { enabled: true },
+      minimap: { enabled: false }
+    });
+    diffEditor.setModel({ original: originalModel, modified: modifiedModel });
+
+    function cleanup(apply?: boolean) {
+      try {
+        if (apply && baseModel) baseModel.setValue(modifiedModel.getValue());
+        diffEditor.dispose();
+        originalModel.dispose();
+        modifiedModel.dispose();
+        diffContainer?.remove();
+        if (baseDom) baseDom.style.display = '';
+      } catch (err) {
+        console.error('[Extension] diff cleanup error', err);
+      }
+      window.postMessage({ type: 'SUGGESTION_RESOLVED_FROM_PAGE' }, '*');
+    }
+
+    // Expose for background-triggered accept/reject via resolveSuggestionScript
+    window.resolveSuggestion = (isAccept: boolean) => cleanup(isAccept);
+  } catch (e) {
+    console.error('[Extension] Error showing suggestion:', e);
+  }
 }
 
 function resolveSuggestionScript(isAccept: boolean): void {
