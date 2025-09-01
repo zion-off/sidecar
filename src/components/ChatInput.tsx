@@ -3,23 +3,11 @@ import { ChatCompletion } from '@/open-router/chat';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent } from 'react';
-import type { MessageType } from '@/types/chat';
-import type { PageData } from '@/types/editor';
+import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildSystemPrompt } from '@/utils/prompt-builder';
-
-interface ChatInputProps {
-  input: string;
-  setInput: (_value: string) => void;
-  isStreaming: boolean;
-  setIsStreaming: (_value: boolean) => void;
-  setStreamingMessage: (_value: string) => void;
-  messages: MessageType[];
-  setMessages: (_fn: (_prev: MessageType[]) => MessageType[]) => void;
-  pageData: PageData;
-}
 
 export function ChatInput({
   input,

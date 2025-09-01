@@ -6,7 +6,6 @@ import { Chat } from '@/components/Chat';
 import { postMessageToParent, sampleSuggestedCode } from '@/utils/messaging';
 
 function App() {
-  // Change this to ref later
   const [problemData, setProblemData] = useState<PageData | null>(null);
   const [injectionStatus, setInjectionStatus] = useState<InjectionStatus>({});
   const [activeSuggestion, setActiveSuggestion] = useState<boolean>(false);
