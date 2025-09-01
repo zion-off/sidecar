@@ -31,21 +31,12 @@ export function ChatInput({
   setMessages,
   pageData
 }: ChatInputProps) {
-  // Use custom hooks for storage settings
-  const {
-    value: apiKey,
-    setValue: setApiKey,
-    saveToStorage: saveApiKey
-  } = useStorageSetting({
+  const { value: apiKey } = useStorageSetting({
     key: 'apiKey',
     defaultValue: ''
   });
 
-  const {
-    value: modelResponse,
-    setValue: setModelResponse,
-    saveToStorage: saveModelResponse
-  } = useStorageSetting<ModelEndpointsResponse | null>({
+  const { value: modelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
     key: 'model',
     defaultValue: null
   });
@@ -134,14 +125,7 @@ export function ChatInput({
         />
         <div className="flex items-end justify-between">
           <div className="flex items-center gap-1">
-            <ChatConfiguration
-              apiKey={apiKey}
-              setApiKey={setApiKey}
-              saveApiKey={saveApiKey}
-              modelResponse={modelResponse}
-              setModelResponse={setModelResponse}
-              saveModelResponse={saveModelResponse}
-            />
+            <ChatConfiguration />
             <Select
               value={config.mode}
               onValueChange={(value) => setConfig({ ...config, mode: value as 'learn' | 'agent' })}
