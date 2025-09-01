@@ -32,6 +32,15 @@ export const sampleMessages = (pageData: PageData | null): MessageType[] => {
   ];
 };
 
+export const seedChat = (question: string): MessageType[] => {
+  return [
+    {
+      role: 'assistant',
+      content: `Need help with <strong>${question.replace(/^\d+\.\s*/, '')}</strong>?`
+    }
+  ];
+};
+
 export function stripControlPreamble(raw: string): string {
   if (!raw) return raw;
   const CONTROL_PRE = /^(?:\s*<\|start\|>assistant<\|channel\|>[a-zA-Z0-9_-]+<\|message\|>)+/;

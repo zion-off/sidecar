@@ -2,19 +2,10 @@
 /* eslint-disable no-unused-vars */
 import { useAutoSmoothScroll } from '@/hooks/useAutoSmoothScroll';
 import { useRef, useState } from 'react';
-import type { MessageType } from '@/types/chat';
-import type { InjectionStatus, PageData } from '@/types/editor';
+import type { ChatProps } from '@/types/chat';
 import { Bubble } from '@/components/Bubble';
 import { ChatInput } from '@/components/ChatInput';
-
-interface ChatProps {
-  pageData: PageData;
-  activeSuggestion: boolean;
-  injectionStatus: InjectionStatus;
-  sendCodeToEditor: (code: string) => void;
-  showSuggestions: (suggestedCode?: string) => void;
-  resolveSuggestion: (isAccept: boolean) => void;
-}
+import { seedChat } from '@/utils/messaging';
 
 export function Chat({
   pageData,
@@ -24,24 +15,13 @@ export function Chat({
   showSuggestions,
   resolveSuggestion
 }: ChatProps) {
-  const [messages, setMessages] = useState<MessageType[]>([
-    {
-      role: 'assistant',
-      content: `Need help with <strong>${pageData.title.replace(/^\d+\.\s*/, '')}</strong>?`
-    }
-  ]);
+  const [messages, setMessages] = useState(seedChat(pageData.title));
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto smooth scroll while streaming (and upon completion if user is at bottom)
-  useAutoSmoothScroll(
-    scrollRef,
-    [messages.length, streamingMessage],
-    true, // always enabled; hook respects user manual scroll position
-    { bottomThreshold: 96 }
-  );
+  useAutoSmoothScroll(scrollRef, [messages.length, streamingMessage], true, { bottomThreshold: 96 });
 
   return (
     <div className="flex h-full w-full max-w-full flex-col justify-between overflow-hidden p-4">

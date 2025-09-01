@@ -4,10 +4,11 @@ import { getModelEndpoints } from '@/open-router/model';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
+import { PopoverHeader } from '@/components/PopoverHeader';
+import { ReasoningEffort } from '@/components/Reasoning';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export function ChatConfiguration() {
   const { value: apiKey, setValue: setApiKey } = useStorageSetting({
@@ -129,75 +130,3 @@ export function ChatConfiguration() {
     </Popover>
   );
 }
-
-const PopoverHeader = () => {
-  return (
-    <div className="space-y-2">
-      <h4 className="text-sm font-medium leading-none">OpenRouter Configuration</h4>
-      <p className="text-muted-foreground">
-        Set the OpenRouter API key and model configuration. Get your API key{' '}
-        <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-          here
-        </a>
-        .
-      </p>
-    </div>
-  );
-};
-
-const ReasoningEffort = () => {
-  const { value: modelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
-    key: 'model',
-    defaultValue: null
-  });
-  const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
-    key: 'config',
-    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
-  });
-
-  const supportsReasoning = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('reasoning') || false;
-  return (
-    <div className="grid grid-cols-3 items-center gap-4">
-      <Label htmlFor="reasoning" className="text-xs">
-        Reasoning
-      </Label>
-      <ToggleGroup
-        type="single"
-        className="col-span-2 grid grid-cols-3"
-        disabled={!supportsReasoning}
-        value={config.reasoning}
-        onValueChange={(value) => setConfig({ ...config, reasoning: (value || '') as ModelConfig['reasoning'] })}
-      >
-        <ReasoningEffortChoices />
-      </ToggleGroup>
-    </div>
-  );
-};
-
-const ReasoningEffortChoices = () => {
-  return (
-    <>
-      <ToggleGroupItem
-        value="low"
-        aria-label="Toggle low"
-        className="col-span-1 h-8 rounded-br-none rounded-tr-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
-      >
-        low
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="medium"
-        aria-label="Toggle medium"
-        className="col-span-1 h-8 rounded-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
-      >
-        med
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="high"
-        aria-label="Toggle high"
-        className="col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
-      >
-        high
-      </ToggleGroupItem>
-    </>
-  );
-};
