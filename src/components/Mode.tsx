@@ -25,16 +25,22 @@ export function ModeSelector() {
 
   return (
     <Select value={config.mode} onValueChange={(value) => setConfig({ ...config, mode: value as 'learn' | 'agent' })}>
-      <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-white/60 hover:bg-white/10 focus:ring-0">
+      <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-neutral-500 shadow-none hover:bg-white/10 focus:ring-0 dark:shadow-sm">
         <SelectValue placeholder="Mode" className="w-fit border-none" />
       </SelectTrigger>
-      <SelectContent className="border-none bg-lc-popover-bg text-xs text-lc-primary">
+      <SelectContent className="bg-lc-bg-popover border-none text-xs text-neutral-500">
         <SelectGroup>
-          <SelectItem value="learn" className="text-xs focus:bg-white/10 focus:text-white">
+          <SelectItem
+            value="learn"
+            className="hover:text-500 text-xs text-neutral-400 focus:bg-white/10 focus:text-neutral-700 dark:focus:text-white"
+          >
             Learn
           </SelectItem>
           {supportsTools && (
-            <SelectItem value="agent" className="text-xs focus:bg-white/10 focus:text-white">
+            <SelectItem
+              value="agent"
+              className="hover:text-500 text-xs text-neutral-400 focus:bg-white/10 focus:text-neutral-700 dark:focus:text-white"
+            >
               Agent
             </SelectItem>
           )}

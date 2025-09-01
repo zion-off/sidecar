@@ -63,18 +63,18 @@ function App() {
 
   if (!problemData) {
     return (
-      <div className="flex h-full items-center justify-center bg-lc-text-light">
+      <div className="bg-lc-bg-base flex h-full items-center justify-center">
         <div className="text-center">
-          <p className="animate-pulse text-white">Loading problem...</p>
+          <p className="animate-pulse text-neutral-500">Loading problem...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full w-full max-w-full flex-col overflow-hidden bg-lc-text-light">
+    <div className="bg-lc-bg-base flex h-full w-full max-w-full flex-col overflow-hidden">
       <Toaster />
-      <div className="flex h-9 items-center gap-1 bg-lc-popover-bg p-1 px-3">
+      <div className="bg-lc-layer-one flex h-9 items-center gap-1 p-1 px-3">
         <HiMiniSparkles className="text-yellow-500" />
         <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
       </div>

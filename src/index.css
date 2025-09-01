@@ -105,6 +105,14 @@ textarea {
     --radius: 0.5rem;
     --table-heading: rgba(255, 255, 255, 0.07);
     --pill-border: rgba(247, 250, 255, 0.12);
+    --lc-primary: 0 0% 0%;
+    --lc-fg: 0 0% 24%;
+    --lc-layer-one: 0 0% 0% / 0.02;
+    --lc-textarea-bg: 0 0% 96%;
+    --lc-bg-base: 0 0% 100%;
+    --lc-text-body: 0 0% 15%;
+    --lc-text-secondary: 0 0% 100% / 0.6;
+    --lc-bg-popover: 0 0% 94%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -133,6 +141,14 @@ textarea {
     --chart-5: 340 75% 55%;
     --table-heading: rgba(255, 255, 255, 0.07);
     --pill-border: rgba(247, 250, 255, 0.12);
+    --lc-primary: 0 0% 96%;
+    --lc-fg: 0 0% 24%;
+    --lc-layer-one: 0 0% 20%;
+    --lc-textarea-bg: 0 0% 19%;
+    --lc-bg-base: 0 0% 15%;
+    --lc-text-body: 0 0% 100%;
+    --lc-text-secondary: 223 28% 95% / 0.75;
+    --lc-bg-popover: 0 0% 17%;
   }
 }
 
@@ -276,7 +292,7 @@ textarea {
 
 .markdown-content table {
   /* Make table independently horizontally scrollable (like code blocks) */
-  @apply border-pill-border overflow-hidden rounded-sm border;
+  @apply overflow-hidden rounded-sm border border-pill-border;
   margin: 0.5rem 0;
   display: block; /* Needed so overflow-x works */
   width: max-content; /* Natural width; allows scroll if wider than container */
@@ -289,7 +305,7 @@ textarea {
 
 .markdown-content th,
 .markdown-content td {
-  @apply border-pill-border border px-2 py-1 text-left;
+  @apply border border-pill-border px-2 py-1 text-left;
 }
 
 .markdown-content th {

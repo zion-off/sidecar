@@ -24,7 +24,7 @@ export function Chat({
 
   return (
     <div className="flex h-full w-full max-w-full flex-col justify-between overflow-hidden p-4">
-      <div ref={scrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-lc-text-light">
+      <div ref={scrollRef} className="hide-scrollbar bg-lc-bg-base min-h-0 flex-1 overflow-y-auto">
         {messages.map((msg, index) => (
           <Bubble key={index} content={msg.content} role={msg.role} type={msg.type} />
         ))}
