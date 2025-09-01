@@ -41,11 +41,7 @@ export function ChatInput({
     defaultValue: null
   });
 
-  const {
-    value: config,
-    setValue: setConfig,
-    saveToStorage: saveConfig
-  } = useStorageSetting<ModelConfig>({
+  const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
     key: 'config',
     defaultValue: { tools: false, reasoning: '', mode: 'learn' }
   });
@@ -129,11 +125,6 @@ export function ChatInput({
             <Select
               value={config.mode}
               onValueChange={(value) => setConfig({ ...config, mode: value as 'learn' | 'agent' })}
-              onOpenChange={(open) => {
-                if (!open) {
-                  saveConfig();
-                }
-              }}
             >
               <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-white/60 hover:bg-white/10 focus:ring-0">
                 <SelectValue placeholder="Mode" className="w-fit border-none" />

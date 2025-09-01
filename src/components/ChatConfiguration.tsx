@@ -10,45 +10,43 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export function ChatConfiguration() {
-  const [modelInput, setModelInput] = useState('');
-  const [isLoadingModel, setIsLoadingModel] = useState(false);
-  const [modelDirty, setModelDirty] = useState(false);
-  const debouncedModelInput = useDebounce(modelInput, 500);
-
-  const {
-    value: apiKey,
-    setValue: setApiKey,
-    saveToStorage: saveApiKey
-  } = useStorageSetting({
+  const { value: apiKey, setValue: setApiKey } = useStorageSetting({
     key: 'apiKey',
     defaultValue: ''
   });
 
-  const {
-    value: modelResponse,
-    setValue: setModelResponse,
-    saveToStorage: saveModelResponse
-  } = useStorageSetting<ModelEndpointsResponse | null>({
+  const { value: modelResponse, setValue: setModelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
     key: 'model',
     defaultValue: null
   });
-  const {
-    value: config,
-    setValue: setConfig,
-    saveToStorage: saveConfig
-  } = useStorageSetting<ModelConfig>({
+  const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
     key: 'config',
     defaultValue: { tools: false, reasoning: '', mode: 'learn' }
   });
 
-  useEffect(() => {
-    if (modelResponse?.data?.id) {
-      setModelInput(modelResponse.data.id);
+  const [localApiKey, setLocalApiKey] = useState<string>(apiKey);
+  const [modelInput, setModelInput] = useState(modelResponse?.data.id || '');
+  const [isLoadingModel, setIsLoadingModel] = useState(false);
+  const [modelDirty, setModelDirty] = useState(false);
+  const debouncedModelInput = useDebounce(modelInput, 500);
+
+  const handlePopoverOpen = (open: boolean) => {
+    if (open) {
+      setLocalApiKey(apiKey);
+      setModelInput(modelResponse?.data.id || '');
+      setModelInput(modelResponse?.data.id || '');
+    } else {
+      setApiKey(localApiKey);
     }
-  }, [modelResponse]);
+  };
 
   useEffect(() => {
     if (!modelDirty) return;
+
+    if (!modelInput.trim()) {
+      setModelResponse(null);
+      return;
+    }
 
     if (!debouncedModelInput.trim()) {
       setModelResponse(null);
@@ -83,22 +81,13 @@ export function ChatConfiguration() {
         setIsLoadingModel(false);
         setModelDirty(false);
       });
-  }, [debouncedModelInput, setModelResponse, config.reasoning, config.mode, setConfig, modelDirty]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedModelInput, modelDirty]);
 
-  const displayName =
-    modelResponse?.data.id.split('/').slice(0, 40) || (modelInput ? modelInput : 'Model not configured');
+  const displayName = modelResponse?.data.id.split('/').slice(0, 40) || 'Model not configured';
 
   return (
-    <Popover
-      onOpenChange={(open) => {
-        // Save to storage when popover closes
-        if (!open) {
-          saveApiKey();
-          saveModelResponse();
-          saveConfig();
-        }
-      }}
-    >
+    <Popover onOpenChange={handlePopoverOpen}>
       <PopoverTrigger className="rounded-md px-1 py-1 text-white/60 hover:bg-white/10">
         {isLoadingModel ? 'Loading...' : displayName}
       </PopoverTrigger>
@@ -113,8 +102,8 @@ export function ChatConfiguration() {
               <Input
                 type="password"
                 id="apiKey"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                value={localApiKey}
+                onChange={(e) => setLocalApiKey(e.target.value)}
                 className="col-span-2 h-8 border-white/10 text-xs focus-visible:ring-0"
               />
             </div>
