@@ -106,7 +106,8 @@ export class ChatCompletion {
             try {
               const parsed = JSON.parse(data);
               const content = parsed.choices?.[0]?.delta?.content;
-              const reasoningDetails = parsed.choices?.[0]?.delta?.reasoning_details;
+              const reasoningDetails =
+                parsed.choices?.[0]?.delta?.reasoning || parsed.choices?.[0]?.delta?.reasoning_details;
               if (content) {
                 if (content) {
                   fullMessage += content;
@@ -116,7 +117,6 @@ export class ChatCompletion {
               if (reasoningDetails) {
                 let deltaText = '';
                 if (Array.isArray(reasoningDetails)) {
-                  // Each element may be an object like { type: 'reasoning.text', text: '...', ... } or a raw string
                   for (const item of reasoningDetails) {
                     if (item && typeof item === 'object') {
                       if (typeof item.text === 'string') deltaText += item.text;
@@ -125,7 +125,6 @@ export class ChatCompletion {
                     }
                   }
                 } else if (typeof reasoningDetails === 'object') {
-                  // Single object case
                   if (typeof reasoningDetails.text === 'string') {
                     deltaText += reasoningDetails.text;
                   }
