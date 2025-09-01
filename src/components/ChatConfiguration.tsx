@@ -85,7 +85,7 @@ export function ChatConfiguration() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedModelInput, modelDirty]);
 
-  const displayName = modelResponse?.data.id.split('/').slice(0, 40) || 'Model not configured';
+  const displayName = modelResponse?.data.id.split('/')[1].slice(0, 40) || 'Model not configured';
 
   return (
     <Popover onOpenChange={handlePopoverOpen}>

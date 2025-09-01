@@ -1,5 +1,5 @@
 import type { MessageType, StreamChatCompletionBody, StreamChatCompletionOptions } from '@/types/chat';
-import { ReasoningEffort } from '@/types/open-router';
+import { ReasoningEffort, Tool } from '@/types/open-router';
 
 export class ChatCompletion {
   private apiKey: string;
@@ -19,7 +19,8 @@ export class ChatCompletion {
   private buildRequestBody(
     model: string,
     reasoning: ReasoningEffort,
-    messages: MessageType[]
+    messages: MessageType[],
+    tools?: Tool[]
   ): StreamChatCompletionBody {
     const body: StreamChatCompletionBody = {
       model: model,
@@ -31,6 +32,10 @@ export class ChatCompletion {
       body['reasoning'] = {
         effort: reasoning
       };
+    }
+
+    if (tools) {
+      body['tools'] = tools;
     }
     return body;
   }
@@ -60,8 +65,13 @@ export class ChatCompletion {
     }
   }
 
-  private async safeProcessStream(model: string, reasoning: ReasoningEffort, messages: MessageType[]): Promise<void> {
-    const body = this.buildRequestBody(model, reasoning, messages);
+  private async safeProcessStream(
+    model: string,
+    reasoning: ReasoningEffort,
+    messages: MessageType[],
+    tools?: Tool[]
+  ): Promise<void> {
+    const body = this.buildRequestBody(model, reasoning, messages, tools);
     const response = await this.makeRequest(body);
     await this.handleErrorResponse(response);
 
@@ -140,9 +150,14 @@ export class ChatCompletion {
     this.onComplete(fullMessage);
   }
 
-  public async processStream(model: string, reasoning: ReasoningEffort, messages: MessageType[]): Promise<void> {
+  public async processStream(
+    model: string,
+    reasoning: ReasoningEffort,
+    messages: MessageType[],
+    tools?: Tool[]
+  ): Promise<void> {
     try {
-      return await this.safeProcessStream(model, reasoning, messages);
+      return await this.safeProcessStream(model, reasoning, messages, tools);
     } catch (error) {
       this.onError(error instanceof Error ? error : new Error(String(error)));
     }
