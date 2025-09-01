@@ -45,3 +45,35 @@ export type ModelConfig = {
   reasoning: ReasoningEffort;
   mode: 'learn' | 'agent';
 };
+
+export type FunctionDescription = {
+  description?: string;
+  name: string;
+  parameters: object;
+};
+
+export type Tool = {
+  type: 'function';
+  function: FunctionDescription;
+};
+
+export type StreamingChoice = {
+  finish_reason: 'tool_calls' | 'stop' | 'length' | 'content_filter' | 'error' | null;
+  native_finish_reason: string | null;
+  delta: {
+    content: string | null;
+    role?: string;
+    tool_calls?: ToolCall[];
+  };
+  error?: ErrorResponse;
+};
+
+export type ErrorResponse = {
+  code: number;
+  message: string;
+  metadata?: Record<string, unknown>;
+};
+
+export type ToolCall = Tool & {
+  id: string;
+};
