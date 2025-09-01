@@ -75,7 +75,7 @@ function App() {
     <div className="bg-lc-bg-base flex h-full w-full max-w-full flex-col overflow-hidden">
       <Toaster />
       <div className="bg-lc-layer-one flex h-9 items-center gap-1 p-1 px-3">
-        <HiMiniSparkles className="text-yellow-500" />
+        {HiMiniSparkles({ className: 'text-yellow-500' })}
         <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
       </div>
 
