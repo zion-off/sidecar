@@ -132,7 +132,7 @@ export function ChatInput({
             className="disabled:opacity-500 cursor-pointer rounded-md px-1 py-1 text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
             disabled={isStreaming || !input.trim() || !apiKey || !modelResponse}
           >
-            <IoSend />
+            {IoSend({})}
           </button>
         </div>
       </div>

@@ -67,10 +67,10 @@ importers:
         specifier: ^0.0.224
         version: 0.0.224
       '@types/react':
-        specifier: ^18.0.17
+        specifier: ^18.3.24
         version: 18.3.24
       '@types/react-dom':
-        specifier: ^18.0.6
+        specifier: ^18.3.7
         version: 18.3.7(@types/react@18.3.24)
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.41.0
