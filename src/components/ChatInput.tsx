@@ -114,7 +114,7 @@ export function ChatInput({
         }
       >
         <textarea
-          className="sticky bottom-0 w-full resize-none bg-transparent px-1 text-white placeholder:text-neutral-500 focus:outline-none"
+          className="text-lc-text-primary sticky bottom-0 w-full resize-none bg-transparent px-1 placeholder:text-neutral-500 focus:outline-none"
           placeholder="Type your message here..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -129,7 +129,7 @@ export function ChatInput({
 
           <button
             type="submit"
-            className="cursor-pointer rounded-md px-1 py-1 text-white/60 hover:bg-white/10 disabled:opacity-50"
+            className="disabled:opacity-500 cursor-pointer rounded-md px-1 py-1 text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
             disabled={isStreaming || !input.trim() || !apiKey || !modelResponse}
           >
             <IoSend />

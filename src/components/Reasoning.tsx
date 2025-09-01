@@ -21,7 +21,7 @@ export const ReasoningEffort = () => {
       </Label>
       <ToggleGroup
         type="single"
-        className="col-span-2 grid grid-cols-3"
+        className="col-span-2 flex gap-0"
         disabled={!supportsReasoning}
         value={config.reasoning}
         onValueChange={(value) => setConfig({ ...config, reasoning: (value || '') as ModelConfig['reasoning'] })}
@@ -33,26 +33,28 @@ export const ReasoningEffort = () => {
 };
 
 export const ReasoningEffortChoices = () => {
+  const colors =
+    'bg-none hover:bg-neutral-200 hover:text-neutral-400 data-[state=on]:bg-neutral-300 data-[state=on]:text-neutral-500 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:data-[state=on]:bg-neutral-600 dark:data-[state=on]:text-neutral-200';
   return (
     <>
       <ToggleGroupItem
         value="low"
         aria-label="Toggle low"
-        className="col-span-1 h-8 rounded-br-none rounded-tr-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
+        className={`h-8 flex-1 rounded-br-none rounded-tr-none font-mono text-xxs ${colors}`}
       >
         low
       </ToggleGroupItem>
       <ToggleGroupItem
         value="medium"
         aria-label="Toggle medium"
-        className="col-span-1 h-8 rounded-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
+        className={`h-8 flex-1 rounded-none font-mono text-xxs ${colors}`}
       >
         med
       </ToggleGroupItem>
       <ToggleGroupItem
         value="high"
         aria-label="Toggle high"
-        className="col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
+        className={`h-8 flex-1 rounded-bl-none rounded-tl-none font-mono text-xxs ${colors}`}
       >
         high
       </ToggleGroupItem>
