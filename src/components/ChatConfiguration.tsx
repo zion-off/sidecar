@@ -9,28 +9,29 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-interface ChatConfigurationProps {
-  apiKey: string;
-  setApiKey: (_value: string) => void;
-  saveApiKey: () => void;
-  modelResponse: ModelEndpointsResponse | null;
-  setModelResponse: (_value: ModelEndpointsResponse | null) => void;
-  saveModelResponse: () => void;
-}
-
-export function ChatConfiguration({
-  apiKey,
-  setApiKey,
-  saveApiKey,
-  modelResponse,
-  setModelResponse,
-  saveModelResponse
-}: ChatConfigurationProps) {
+export function ChatConfiguration() {
   const [modelInput, setModelInput] = useState('');
   const [isLoadingModel, setIsLoadingModel] = useState(false);
   const [modelDirty, setModelDirty] = useState(false);
   const debouncedModelInput = useDebounce(modelInput, 500);
 
+  const {
+    value: apiKey,
+    setValue: setApiKey,
+    saveToStorage: saveApiKey
+  } = useStorageSetting({
+    key: 'apiKey',
+    defaultValue: ''
+  });
+
+  const {
+    value: modelResponse,
+    setValue: setModelResponse,
+    saveToStorage: saveModelResponse
+  } = useStorageSetting<ModelEndpointsResponse | null>({
+    key: 'model',
+    defaultValue: null
+  });
   const {
     value: config,
     setValue: setConfig,
@@ -163,21 +164,21 @@ export function ChatConfiguration({
                 <ToggleGroupItem
                   value="low"
                   aria-label="Toggle low"
-                  className="text-xxs col-span-1 h-8 rounded-br-none rounded-tr-none font-mono hover:bg-lc-fg data-[state=on]:bg-white/20"
+                  className="col-span-1 h-8 rounded-br-none rounded-tr-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
                 >
                   low
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="medium"
                   aria-label="Toggle medium"
-                  className="text-xxs col-span-1 h-8 rounded-none font-mono hover:bg-lc-fg data-[state=on]:bg-white/20"
+                  className="col-span-1 h-8 rounded-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
                 >
                   med
                 </ToggleGroupItem>
                 <ToggleGroupItem
                   value="high"
                   aria-label="Toggle high"
-                  className="text-xxs col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono hover:bg-lc-fg data-[state=on]:bg-white/20"
+                  className="col-span-1 h-8 rounded-bl-none rounded-tl-none font-mono text-xxs hover:bg-lc-fg data-[state=on]:bg-white/20"
                 >
                   high
                 </ToggleGroupItem>
