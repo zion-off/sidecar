@@ -1,34 +1,55 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getStorageItem, setStorageItem } from '@/utils/storage';
 
 interface UseStorageSettingOptions<T> {
   key: string;
   defaultValue: T;
-  staleTime?: number;
 }
 
 export function useStorageSetting<T>({ key, defaultValue }: UseStorageSettingOptions<T>) {
-  const [localValue, setLocalValue] = useState<T>(defaultValue);
+  const [value, setValue] = useState<T>(defaultValue);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     getStorageItem<T>(key).then((storedValue) => {
-      if (storedValue !== undefined && storedValue !== null) {
-        setLocalValue(storedValue);
-      }
+      setValue(storedValue ?? defaultValue);
       setIsLoading(false);
     });
-  }, [key]);
+  }, [key, defaultValue]);
 
-  const saveToStorage = () => {
-    setIsLoading(true);
-    setStorageItem(key, localValue).finally(() => setIsLoading(false));
-  };
+  useEffect(() => {
+    if (!chrome?.storage) {
+      return;
+    }
+
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+      if (areaName === 'local' && changes[key]) {
+        setValue(changes[key].newValue === undefined ? defaultValue : changes[key].newValue);
+      }
+    };
+
+    chrome.storage.onChanged.addListener(listener);
+
+    return () => {
+      chrome.storage.onChanged.removeListener(listener);
+    };
+  }, [key, defaultValue]);
+
+  const updateValue = useCallback(
+    async (newValue: T) => {
+      setIsLoading(true);
+      try {
+        await setStorageItem(key, newValue);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [key]
+  );
 
   return {
-    value: localValue,
-    setValue: setLocalValue,
-    saveToStorage,
+    value,
+    setValue: updateValue,
     isLoading
   };
 }
