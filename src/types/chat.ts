@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { InjectionStatus, PageData } from '@/types/editor';
-import type { ReasoningEffort } from '@/types/open-router';
+import type { ReasoningEffort, Tool } from '@/types/open-router';
 
 export type MessageType = {
   content: string;
@@ -26,6 +26,7 @@ export type StreamChatCompletionBody = {
   reasoning?: {
     effort: ReasoningEffort;
   };
+  tools?: Tool[];
 };
 
 export type ChatProps = {

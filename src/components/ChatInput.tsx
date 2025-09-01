@@ -1,5 +1,6 @@
 import { useStorageSetting } from '@/hooks/useStorageSetting';
 import { ChatCompletion } from '@/open-router/chat';
+import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent } from 'react';
@@ -80,11 +81,12 @@ export function ChatInput({
       }
     });
 
-    await client.processStream(modelResponse.data.id, config.reasoning, [
-      buildSystemPrompt(pageData),
-      ...messages.slice(1),
-      userMessage
-    ]);
+    await client.processStream(
+      modelResponse.data.id,
+      config.reasoning,
+      [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
+      config.mode === 'agent' ? defaultTools : undefined
+    );
   }
 
   function handleKeyDown(e: KeyboardEvent) {
