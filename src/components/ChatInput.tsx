@@ -1,5 +1,5 @@
 import { useStorageSetting } from '@/hooks/useStorageSetting';
-import { streamChatCompletion } from '@/open-router/chat';
+import { ChatCompletion } from '@/open-router/chat';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent } from 'react';
@@ -59,11 +59,8 @@ export function ChatInput({
     setIsStreaming(true);
     setStreamingMessage('');
 
-    await streamChatCompletion({
+    const client = new ChatCompletion({
       apiKey,
-      model: modelResponse.data.id,
-      reasoning: config.reasoning,
-      messages: [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
       onChunk: (_, fullMessage) => {
         setStreamingMessage(fullMessage);
       },
@@ -94,6 +91,12 @@ export function ChatInput({
         });
       }
     });
+
+    await client.processStream(modelResponse.data.id, config.reasoning, [
+      buildSystemPrompt(pageData),
+      ...messages.slice(1),
+      userMessage
+    ]);
   }
 
   function handleKeyDown(e: KeyboardEvent) {
