@@ -7,8 +7,8 @@ import { FormEvent, KeyboardEvent } from 'react';
 import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { buildSystemPrompt } from '@/utils/prompt-builder';
+import { ModeSelector } from './Mode';
 
 export function ChatInput({
   input,
@@ -31,12 +31,10 @@ export function ChatInput({
     defaultValue: null
   });
 
-  const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
+  const { value: config } = useStorageSetting<ModelConfig>({
     key: 'config',
     defaultValue: { tools: false, reasoning: '', mode: 'learn' }
   });
-
-  const supportsTools = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('tools') || false;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -98,7 +96,6 @@ export function ChatInput({
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      // Create a synthetic form event to submit the form
       const form = e.currentTarget.closest('form');
       if (form) {
         const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
@@ -127,26 +124,7 @@ export function ChatInput({
         <div className="flex items-end justify-between">
           <div className="flex items-center gap-1">
             <ChatConfiguration />
-            <Select
-              value={config.mode}
-              onValueChange={(value) => setConfig({ ...config, mode: value as 'learn' | 'agent' })}
-            >
-              <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-white/60 hover:bg-white/10 focus:ring-0">
-                <SelectValue placeholder="Mode" className="w-fit border-none" />
-              </SelectTrigger>
-              <SelectContent className="border-none bg-lc-popover-bg text-xs text-lc-primary">
-                <SelectGroup>
-                  <SelectItem value="learn" className="text-xs focus:bg-white/10 focus:text-white">
-                    Learn
-                  </SelectItem>
-                  {supportsTools && (
-                    <SelectItem value="agent" className="text-xs focus:bg-white/10 focus:text-white">
-                      Agent
-                    </SelectItem>
-                  )}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <ModeSelector />
           </div>
 
           <button
