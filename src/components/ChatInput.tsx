@@ -86,6 +86,12 @@ export function ChatInput({
         toast.warning(error.message || 'An error occurred while fetching the response.');
         setIsStreaming(false);
         setStreamingMessage('');
+        setMessages((prev) => {
+          if (prev.length > 0 && prev[prev.length - 1].role === 'user') {
+            return prev.slice(0, -1);
+          }
+          return prev;
+        });
       }
     });
   }
