@@ -18,7 +18,8 @@ export function ChatInput({
   setStreamingMessage,
   messages,
   setMessages,
-  pageData
+  pageData,
+  showSuggestions
 }: ChatInputProps) {
   const { value: apiKey } = useStorageSetting({
     key: 'apiKey',
@@ -61,6 +62,11 @@ export function ChatInput({
           }
           return [...prev, { role: 'assistant', content: reasoning, type: 'reasoning' }];
         });
+      },
+      onToolCall: (func, args) => {
+        if (func === 'suggest_code') {
+          showSuggestions(args.suggestion);
+        }
       },
       onComplete: (fullMessage) => {
         const assistantMessage: MessageType = { content: fullMessage, role: 'assistant' };

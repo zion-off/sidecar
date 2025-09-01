@@ -1,5 +1,11 @@
 import { Tool } from '@/types/open-router';
 
+export type ToolFunctionArgs = {
+  suggest_code: {
+    suggestion: string;
+  };
+};
+
 export const defaultTools: Tool[] = [
   {
     type: 'function',
