@@ -85,6 +85,7 @@ export function Chat({
           messages={messages}
           setMessages={setMessages}
           pageData={pageData}
+          showSuggestions={showSuggestions}
         />
       </div>
     </div>

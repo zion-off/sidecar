@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { ToolFunctionArgs } from '@/open-router/tools';
 import { InjectionStatus, PageData } from '@/types/editor';
 import type { ReasoningEffort, Tool } from '@/types/open-router';
 
@@ -15,6 +16,7 @@ export type StreamChatCompletionOptions = {
   messages: MessageType[];
   onChunk: (content: string, fullMessage: string) => void;
   onReasoning?: (reasoning: string) => void;
+  onToolCall: <T extends keyof ToolFunctionArgs>(toolName: T, args: ToolFunctionArgs[T]) => void;
   onComplete: (fullMessage: string) => void;
   onError: (error: Error) => void;
 };
@@ -47,4 +49,5 @@ export type ChatInputProps = {
   messages: MessageType[];
   setMessages: (fn: (prev: MessageType[]) => MessageType[]) => void;
   pageData: PageData;
+  showSuggestions: (suggestedCode?: string) => void;
 };
