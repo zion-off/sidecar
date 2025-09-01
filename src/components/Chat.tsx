@@ -9,7 +9,6 @@ import { Suggestion } from './Suggestion';
 export function Chat({
   pageData,
   activeSuggestion,
-  injectionStatus,
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   sendCodeToEditor,
   showSuggestions,
@@ -33,12 +32,7 @@ export function Chat({
       </div>
 
       <div className="flex-shrink-0">
-        <Suggestion
-          injectionStatus={injectionStatus}
-          activeSuggestion={activeSuggestion}
-          resolveSuggestion={resolveSuggestion}
-          showSuggestions={showSuggestions}
-        />
+        <Suggestion activeSuggestion={activeSuggestion} resolveSuggestion={resolveSuggestion} />
         <ChatInput
           input={input}
           setInput={setInput}
