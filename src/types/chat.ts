@@ -40,6 +40,8 @@ export type ChatProps = {
   resolveSuggestion: (isAccept: boolean) => void;
 };
 
+export type SuggestionProps = Omit<ChatProps, 'pageData' | 'sendCodeToEditor'>;
+
 export type ChatInputProps = {
   input: string;
   setInput: (value: string) => void;
