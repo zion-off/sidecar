@@ -107,24 +107,27 @@ export function ChatInput({
   return (
     <form onSubmit={handleSubmit}>
       <div className="relative">
+        {/* Animated border background */}
         <div
           className={`bg-animated-border bg-border-animation absolute -inset-px rounded-md transition-opacity duration-300 ease-in-out ${
-            isStreaming ? 'opacity-75' : 'opacity-0'
+            isStreaming ? 'opacity-50 dark:opacity-75' : 'opacity-0'
           }`}
           style={{
             animation: isStreaming ? 'border-glow 4s linear infinite' : 'none'
           }}
         ></div>
+
         <div
-          className={`relative rounded-md bg-lc-textarea-bg p-2 drop-shadow-md transition-all duration-300 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500 ${
+          className={`relative rounded-md border border-transparent bg-lc-textarea-bg p-2 transition-all duration-300 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500 dark:drop-shadow-md ${
             isStreaming
-              ? 'shadow-[inset_0_0_12px_rgba(221,123,187,0.15),inset_0_0_8px_rgba(215,159,30,0.1),inset_0_0_6px_rgba(90,146,44,0.1),inset_0_0_4px_rgba(76,120,148,0.1)]'
+              ? 'shadow-[inset_0_0_8px_rgba(221,123,187,0.08),inset_0_0_6px_rgba(215,159,30,0.06),inset_0_0_4px_rgba(90,146,44,0.06),inset_0_0_4px_rgba(76,120,148,0.06)] dark:shadow-[inset_0_0_12px_rgba(221,123,187,0.15),inset_0_0_8px_rgba(215,159,30,0.1),inset_0_0_6px_rgba(90,146,44,0.1),inset_0_0_4px_rgba(76,120,148,0.1)]'
               : ''
           }`}
         >
           <textarea
+            rows={3}
             className="text-lc-text-primary sticky bottom-0 w-full resize-none bg-transparent px-1 placeholder:text-neutral-500 focus:outline-none"
-            placeholder="Type your message here..."
+            placeholder="Ask about this problem"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
