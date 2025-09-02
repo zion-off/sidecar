@@ -7,19 +7,6 @@ module.exports = {
       fontSize: {
         xxs: '0.675rem'
       },
-      keyframes: {
-        'glow-pulse': {
-          '0%, 100%': {
-            boxShadow: '0 0 6px 2px rgba(255,255,255,0.10), 0 0 14px 4px rgba(255,255,255,0.06)'
-          },
-          '50%': {
-            boxShadow: '0 0 10px 3px rgba(255,255,255,0.18), 0 0 22px 6px rgba(255,255,255,0.10)'
-          }
-        }
-      },
-      animation: {
-        'glow-pulse': 'glow-pulse 3s ease-in-out infinite'
-      },
       colors: {
         'lc-primary': 'hsl(var(--lc-primary))',
         'lc-fg': 'hsl(var(--lc-fg))',
@@ -77,6 +64,26 @@ module.exports = {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
+      },
+      animation: {
+        'border-glow': 'border-glow 4s ease-in-out infinite'
+      },
+      keyframes: {
+        'border-glow': {
+          '0%, 100%': {
+            'background-position': '0% 50%'
+          },
+          '50%': {
+            'background-position': '100% 50%'
+          }
+        }
+      },
+      backgroundImage: {
+        'rainbow-gradient': 'conic-gradient(from 0deg, #dd7bbb, #d79f1e, #5a922c, #4c7894, #dd7bbb)',
+        'animated-border': 'linear-gradient(45deg, #dd7bbb 0%, #d79f1e 25%, #5a922c 50%, #4c7894 75%, #dd7bbb 100%)'
+      },
+      backgroundSize: {
+        'border-animation': '400% 400%'
       }
     }
   },
