@@ -18,15 +18,15 @@
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/Info.plist</key>
 		<data>
-		AmZef0WVhJxjNgerH3I1PK2QfFo=
+		iRi6eGr6h5qqiJ8kwfCHfeKKFoo=
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/MainMenu.nib</key>
 		<data>
-		Gul8bEowEtLT7UnaS/bxk5lDCiQ=
+		b1fCisJySXLtHy5+eW+/gk4844o=
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/NSWindowController-B8D-0N-5wS.nib</key>
 		<data>
-		/UKe5+GdG2uowe7dOcPt/kssqTQ=
+		NLnHMeGm08AN7xRLOPHje5KQZpw=
 		</data>
 		<key>Resources/Base.lproj/Main.storyboardc/XfG-lQ-9wD-view-m2S-Jp-Qdl.nib</key>
 		<data>
@@ -204,7 +204,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			wRzWGUu8VKb9uJOE/yyY8ZsId6k=
+			3xqyax/X+27xlYW7QXvVeG45b24=
 			</data>
 			<key>requirement</key>
 			<string>identifier "com.yourCompany.Leetcode-Sidecar.Extension" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: atibjawad@gmail.com (FLB3GTFZ75)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
@@ -234,21 +234,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Y53vhPQ77bGf+oiGoMEEnwW0yw9AWwfIMvfh9XJA1n4=
+			vQ/09AV74BZi0jhCtGiRgnxEJyNSAnUsKY6XRtaNmi4=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/MainMenu.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			pLhWKETFtxEruVDYas6Ob9y3W3Wy1qkR+hek/2/gov4=
+			EIP/plblmwmPUZviB8O8sxLzgSKOh3QrFq/CUzCJed4=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/NSWindowController-B8D-0N-5wS.nib</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			gMeiahfWr2JsK3+C5j4gqZCL1jJUS9USp9RC9psgfJU=
+			xTRIZvk8tysDgyo9NBpuKBcdHD6e8IHiZY7b7uDgx1o=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/Main.storyboardc/XfG-lQ-9wD-view-m2S-Jp-Qdl.nib</key>
