@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Sidecar for Leetcode</string>
+	<string>Leetcode Sidecar</string>
 	<key>CFBundleExecutable</key>
 	<string>Leetcode Sidecar</string>
 	<key>CFBundleIconFile</key>

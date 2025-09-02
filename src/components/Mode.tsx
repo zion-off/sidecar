@@ -25,7 +25,7 @@ export function ModeSelector() {
 
   return (
     <Select value={config.mode} onValueChange={(value) => setConfig({ ...config, mode: value as 'learn' | 'agent' })}>
-      <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-neutral-500 shadow-none hover:bg-white/10 focus:ring-0 dark:shadow-sm">
+      <SelectTrigger className="h-fit w-fit border-none px-1 py-1 text-xs text-neutral-500 shadow-none hover:bg-white/10 focus:ring-0 dark:shadow-sm">
         <SelectValue placeholder="Mode" className="w-fit border-none text-xs" />
       </SelectTrigger>
       <SelectContent className="border-none bg-lc-bg-popover text-xs text-neutral-500">
