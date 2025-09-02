@@ -7,14 +7,14 @@ import { seedChat } from '@/utils/messaging';
 import { Suggestion } from './Suggestion';
 
 export function Chat({
-  pageData,
+  problemTitle,
   activeSuggestion,
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   sendCodeToEditor,
   showSuggestions,
   resolveSuggestion
 }: ChatProps) {
-  const [messages, setMessages] = useState(seedChat(pageData.title));
+  const [messages, setMessages] = useState(seedChat(problemTitle));
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -24,7 +24,7 @@ export function Chat({
 
   return (
     <div className="flex h-full w-full max-w-full flex-col justify-between overflow-hidden p-4">
-      <div ref={scrollRef} className="hide-scrollbar bg-lc-bg-base min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-lc-bg-base">
         {messages.map((msg, index) => (
           <Bubble key={index} content={msg.content} role={msg.role} type={msg.type} />
         ))}
@@ -41,7 +41,6 @@ export function Chat({
           setStreamingMessage={setStreamingMessage}
           messages={messages}
           setMessages={setMessages}
-          pageData={pageData}
           showSuggestions={showSuggestions}
         />
       </div>

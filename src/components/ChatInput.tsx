@@ -7,7 +7,7 @@ import { FormEvent, KeyboardEvent } from 'react';
 import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
-import { buildSystemPrompt } from '@/utils/prompt-builder';
+import { buildSystemPromptFromContentScript } from '@/utils/prompt-builder';
 import { ModeSelector } from './Mode';
 
 export function ChatInput({
@@ -18,7 +18,6 @@ export function ChatInput({
   setStreamingMessage,
   messages,
   setMessages,
-  pageData,
   showSuggestions
 }: ChatInputProps) {
   const { value: apiKey } = useStorageSetting({
@@ -85,10 +84,13 @@ export function ChatInput({
       }
     });
 
+    // Get system prompt with current page data
+    const systemPrompt = await buildSystemPromptFromContentScript();
+
     await client.processStream(
       modelResponse.data.id,
       config.reasoning,
-      [buildSystemPrompt(pageData), ...messages.slice(1), userMessage],
+      [systemPrompt, ...messages.slice(1), userMessage],
       config.mode === 'agent' ? defaultTools : undefined
     );
   }

@@ -32,3 +32,21 @@ export function buildSystemPrompt(pageData: PageData, customInstructions: string
     Use this context to answer the user's questions.`
   };
 }
+
+export async function buildSystemPromptFromContentScript(customInstructions: string = ''): Promise<MessageType> {
+  return new Promise((resolve) => {
+    // Request problem data from content script
+    window.parent.postMessage({ type: 'GET_PROBLEM_DATA' }, '*');
+
+    // Listen for the response
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'PROBLEM_DATA_RESPONSE') {
+        window.removeEventListener('message', handleMessage);
+        const pageData = event.data.data;
+        resolve(buildSystemPrompt(pageData, customInstructions));
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+  });
+}
