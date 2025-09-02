@@ -6,15 +6,15 @@
 	<dict>
 		<key>Resources/assets/index.css</key>
 		<data>
-		cRyFfCos/7uisJ2KYWwX1ec++7E=
+		WqHWZTIxeSA+XkW6TQ95U+L/6ZM=
 		</data>
 		<key>Resources/assets/index.js</key>
 		<data>
-		TKaXf8mtO6TCrOoyg4/9AiTTlFc=
+		3HnvdfInAHrhAcP2DhHmCBT7yj8=
 		</data>
 		<key>Resources/background.js</key>
 		<data>
-		pp6ZZPxahwQ/iV/mtEu3tS9RcRI=
+		nlFWt6oaLSt2TtLNyBpix1T7k2A=
 		</data>
 		<key>Resources/content.css</key>
 		<data>
@@ -22,7 +22,7 @@
 		</data>
 		<key>Resources/content.js</key>
 		<data>
-		r2XLWT5EWnhZvowYYTAFfXxpSls=
+		k00y7C+vkNAn+bVq64lGpPQhNs8=
 		</data>
 		<key>Resources/index.html</key>
 		<data>
@@ -38,7 +38,7 @@
 		</data>
 		<key>Resources/manifest.json</key>
 		<data>
-		vko0GTCPltUk2DeRAsuQUWqjWxc=
+		+SOHLnbDJ4OqytBPTk1JJu+S8I0=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -47,21 +47,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			FQvvarwFPi3EqXuPxmWC5GAerbVkuT3hmb9Vc0Y5n20=
+			KyTwa8+FR4YirDmcHLpGCjMdZ7kAbGLJ8d2jZMfRMTQ=
 			</data>
 		</dict>
 		<key>Resources/assets/index.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			+pYQhaw+1oLLO3Dockcl0CnoJkl0fOglBlhcpXKTmW4=
+			stSW7ZEMOOe/vCNZr71ueNf12wXk+qh73/gZ8Ed6ak4=
 			</data>
 		</dict>
 		<key>Resources/background.js</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			e6KUOaJBhOTQdQ0hMHXHMuXiwlHJ8T21SirCuCYLF+A=
+			7WTHtVSKL0siPe256ra+kbaNrH+fDZtlTduxqcO6ybg=
 			</data>
 		</dict>
 		<key>Resources/content.css</key>
@@ -75,7 +75,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			0EKw+UZHSlOjTA0MNmkm14gCIh+maR9k6ixTTk/9Ii8=
+			Bh9mRBiKUmOY8V17uIyb2NO+k2HGUVnXx/3DMmGay7k=
 			</data>
 		</dict>
 		<key>Resources/index.html</key>
@@ -103,7 +103,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			8lA27JweMbSPMsGkfbPAU8T7twFlE25eE76eF/o3T6A=
+			BGc+sS7adujzOaYukPax6JuZ9YSSawpzu+Zq/iiRDzg=
 			</data>
 		</dict>
 	</dict>
