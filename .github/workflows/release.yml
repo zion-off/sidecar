@@ -1,0 +1,95 @@
+name: Create Release
+on:
+  push:
+    branches: [main, release-*]
+    paths:
+      - 'src/public/manifest.json'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Need 2 commits to compare changes
+
+      - name: Check if version changed
+        id: version-check
+        run: |
+          # Get the current version from manifest.json
+          CURRENT_VERSION=$(jq -r '.version' src/public/manifest.json)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          # Check if this is the first commit or if version actually changed
+          if git show HEAD~1:src/public/manifest.json 2>/dev/null; then
+            PREVIOUS_VERSION=$(git show HEAD~1:src/public/manifest.json | jq -r '.version')
+            echo "previous_version=$PREVIOUS_VERSION" >> $GITHUB_OUTPUT
+            
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+              echo "version_changed=true" >> $GITHUB_OUTPUT
+              echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+            else
+              echo "version_changed=false" >> $GITHUB_OUTPUT
+              echo "Version did not change ($CURRENT_VERSION)"
+            fi
+          else
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+            echo "First commit or previous manifest not found, treating as version change"
+          fi
+
+      - name: Create Chrome extension zip
+        if: steps.version-check.outputs.version_changed == 'true'
+        run: |
+          cd chrome
+          zip -r "../leetcode-sidecar-chrome-v${{ steps.version-check.outputs.current_version }}.zip" .
+          cd ..
+
+      - name: Create Safari extension zip
+        if: steps.version-check.outputs.version_changed == 'true'
+        run: |
+          cd safari
+          zip -r "../leetcode-sidecar-safari-v${{ steps.version-check.outputs.current_version }}.zip" .
+          cd ..
+
+      - name: Check if release already exists
+        if: steps.version-check.outputs.version_changed == 'true'
+        id: release-check
+        run: |
+          if gh release view "v${{ steps.version-check.outputs.current_version }}" >/dev/null 2>&1; then
+            echo "release_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "release_exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.version_changed == 'true' && steps.release-check.outputs.release_exists == 'false'
+        run: |
+          gh release create "v${{ steps.version-check.outputs.current_version }}" \
+            --title "Leetcode Sidecar v${{ steps.version-check.outputs.current_version }}" \
+            --notes "Release of Leetcode Sidecar version ${{ steps.version-check.outputs.current_version }}" \
+            --draft=false \
+            --prerelease=false \
+            "leetcode-sidecar-chrome-v${{ steps.version-check.outputs.current_version }}.zip#Chrome Extension" \
+            "leetcode-sidecar-safari-v${{ steps.version-check.outputs.current_version }}.zip#Safari Extension"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update existing release
+        if: steps.version-check.outputs.version_changed == 'true' && steps.release-check.outputs.release_exists == 'true'
+        run: |
+          echo "Release v${{ steps.version-check.outputs.current_version }} already exists. Uploading new assets..."
+          gh release upload "v${{ steps.version-check.outputs.current_version }}" \
+            "leetcode-sidecar-chrome-v${{ steps.version-check.outputs.current_version }}.zip#Chrome Extension" \
+            "leetcode-sidecar-safari-v${{ steps.version-check.outputs.current_version }}.zip#Safari Extension" \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip release creation
+        if: steps.version-check.outputs.version_changed == 'false'
+        run: |
+          echo "Version did not change. Skipping release creation."
