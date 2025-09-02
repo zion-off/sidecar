@@ -15,7 +15,7 @@ export function useStorageSetting<T>({ key, defaultValue }: UseStorageSettingOpt
       setValue(storedValue ?? defaultValue);
       setIsLoading(false);
     });
-  }, [key, defaultValue]);
+  }, [key]);
 
   useEffect(() => {
     if (!chrome?.storage) {
@@ -33,7 +33,7 @@ export function useStorageSetting<T>({ key, defaultValue }: UseStorageSettingOpt
     return () => {
       chrome.storage.onChanged.removeListener(listener);
     };
-  }, [key, defaultValue]);
+  }, [key]);
 
   const updateValue = useCallback(
     async (newValue: T) => {

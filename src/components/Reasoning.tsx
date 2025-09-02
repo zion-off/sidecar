@@ -2,6 +2,7 @@ import { useStorageSetting } from '@/hooks/useStorageSetting';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { defaultConfig } from '@/utils/defaults';
 
 export const ReasoningEffort = () => {
   const { value: modelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
@@ -10,7 +11,7 @@ export const ReasoningEffort = () => {
   });
   const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
     key: 'config',
-    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
+    defaultValue: defaultConfig
   });
 
   const supportsReasoning = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('reasoning') || false;

@@ -9,6 +9,7 @@ import { ReasoningEffort } from '@/components/Reasoning';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { defaultConfig } from '@/utils/defaults';
 
 export function ChatConfiguration() {
   const { value: apiKey, setValue: setApiKey } = useStorageSetting({
@@ -22,7 +23,7 @@ export function ChatConfiguration() {
   });
   const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
     key: 'config',
-    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
+    defaultValue: defaultConfig
   });
 
   const [localApiKey, setLocalApiKey] = useState<string>(apiKey);
@@ -82,7 +83,6 @@ export function ChatConfiguration() {
         setIsLoadingModel(false);
         setModelDirty(false);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedModelInput, modelDirty]);
 
   const displayName = modelResponse?.data.id.split('/')[1].slice(0, 40) || 'Model not configured';

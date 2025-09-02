@@ -1,6 +1,7 @@
 import { useStorageSetting } from '@/hooks/useStorageSetting';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { defaultConfig } from '@/utils/defaults';
 
 export function ModeSelector() {
   const {
@@ -9,7 +10,7 @@ export function ModeSelector() {
     isLoading: configLoading
   } = useStorageSetting<ModelConfig>({
     key: 'config',
-    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
+    defaultValue: defaultConfig
   });
 
   const { value: modelResponse, isLoading: modelLoading } = useStorageSetting<ModelEndpointsResponse | null>({
