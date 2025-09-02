@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2 # Need 2 commits to compare changes
 
       - name: Check if version changed
         id: version-check
@@ -22,21 +20,22 @@ jobs:
           CURRENT_VERSION=$(jq -r '.version' src/public/manifest.json)
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-          # Check if this is the first commit or if version actually changed
-          if git show HEAD~1:src/public/manifest.json 2>/dev/null; then
-            PREVIOUS_VERSION=$(git show HEAD~1:src/public/manifest.json | jq -r '.version')
-            echo "previous_version=$PREVIOUS_VERSION" >> $GITHUB_OUTPUT
+          # For pushes to main, compare with the commit before the push
+          # ${{ github.event.before }} gives us the SHA before this push
+          if git show ${{ github.event.before }}:src/public/manifest.json 2>/dev/null; then
+            BEFORE_VERSION=$(git show ${{ github.event.before }}:src/public/manifest.json | jq -r '.version')
+            echo "before_version=$BEFORE_VERSION" >> $GITHUB_OUTPUT
             
-            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+            if [ "$CURRENT_VERSION" != "$BEFORE_VERSION" ]; then
               echo "version_changed=true" >> $GITHUB_OUTPUT
-              echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+              echo "Version changed from $BEFORE_VERSION to $CURRENT_VERSION"
             else
               echo "version_changed=false" >> $GITHUB_OUTPUT
               echo "Version did not change ($CURRENT_VERSION)"
             fi
           else
             echo "version_changed=true" >> $GITHUB_OUTPUT
-            echo "First commit or previous manifest not found, treating as version change"
+            echo "Previous version not found, treating as version change"
           fi
 
       - name: Create Chrome extension zip
