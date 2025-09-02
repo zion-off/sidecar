@@ -46,6 +46,30 @@ function injectionScript(codeToInject: string): boolean {
   }
 }
 
+function getEditorContentScript(): string {
+  try {
+    const monacoInstance = window.monaco;
+    if (monacoInstance && monacoInstance.editor) {
+      const editors = monacoInstance.editor.getEditors();
+      for (let i = 0; i < editors.length; i++) {
+        const editor = editors[i];
+        if (editor) {
+          const model = editor.getModel();
+          if (model) {
+            const content = model.getValue();
+            if (content.trim().length > 0) {
+              return content;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[Extension] Error getting editor content:', e);
+  }
+  return '';
+}
+
 function showSuggestionScript(suggestion: { originalCode: string; suggestedCode: string }): void {
   try {
     const monacoInstance = window.monaco;
@@ -138,6 +162,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })
         .then((injectionResult) => sendResponse({ success: injectionResult[0].result }))
         .catch((error) => console.error(error));
+      break;
+
+    case 'GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT':
+      chrome.scripting
+        .executeScript({
+          target: { tabId },
+          func: getEditorContentScript,
+          world: 'MAIN'
+        })
+        .then((result) => sendResponse({ content: result[0].result }))
+        .catch((error) => {
+          console.error(error);
+          sendResponse({ content: '' });
+        });
       break;
 
     case 'SHOW_SUGGESTION_FROM_CONTENT_SCRIPT':

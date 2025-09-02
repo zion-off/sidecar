@@ -42,6 +42,7 @@ export function getLanguage(): string {
 }
 
 export function getEditorContent(): string {
+  // Fallback to DOM method (only visible content) - will be replaced by async version
   const viewLinesElement = document.querySelector('.view-lines[role="presentation"]');
   if (!viewLinesElement) return '';
   const viewLines = viewLinesElement.querySelectorAll('.view-line');
@@ -52,6 +53,26 @@ export function getEditorContent(): string {
     lines.push(cleanedContent);
   });
   return lines.join('\n');
+}
+
+export async function getEditorContentAsync(): Promise<string> {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT' }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error getting editor content from background:', chrome.runtime.lastError);
+        // Fallback to DOM method
+        resolve(getEditorContent());
+      } else {
+        const content = response?.content || '';
+        if (content.trim().length > 0) {
+          resolve(content);
+        } else {
+          console.error('Background script returned empty content, using DOM fallback');
+          resolve(getEditorContent());
+        }
+      }
+    });
+  });
 }
 
 async function main() {
@@ -88,19 +109,22 @@ async function main() {
 
       case 'GET_PROBLEM_DATA':
         // Send all problem data when requested
-        appIframe.contentWindow?.postMessage(
-          {
-            type: 'PROBLEM_DATA_RESPONSE',
-            data: {
-              title: getProblemTitle(),
-              description: getProblemDescription(),
-              editorContent: getEditorContent(),
-              language: getLanguage(),
-              timestamp: Date.now()
-            }
-          },
-          '*'
-        );
+        (async () => {
+          const editorContent = await getEditorContentAsync();
+          appIframe.contentWindow?.postMessage(
+            {
+              type: 'PROBLEM_DATA_RESPONSE',
+              data: {
+                title: getProblemTitle(),
+                description: getProblemDescription(),
+                editorContent: editorContent,
+                language: getLanguage(),
+                timestamp: Date.now()
+              }
+            },
+            '*'
+          );
+        })();
         break;
 
       case 'INJECT_CODE':
