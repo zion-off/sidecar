@@ -106,34 +106,44 @@ export function ChatInput({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div
-        className={
-          `relative rounded-md bg-lc-textarea-bg p-2 drop-shadow-md transition-shadow duration-200 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500 ` +
-          'before:transition-duration-[2000ms] before:pointer-events-none before:absolute before:inset-0 before:rounded-md before:opacity-0 before:shadow-[0_0_6px_2px_rgba(255,255,255,0.10),0_0_14px_4px_rgba(255,255,255,0.05)] before:transition-opacity before:content-[""]' +
-          (isStreaming ? ' before:animate-glow-pulse before:opacity-100' : '')
-        }
-      >
-        <textarea
-          className="text-lc-text-primary sticky bottom-0 w-full resize-none bg-transparent px-1 placeholder:text-neutral-500 focus:outline-none"
-          placeholder="Type your message here..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isStreaming}
-        />
-        <div className="flex items-end justify-between">
-          <div className="flex items-center gap-1">
-            <ChatConfiguration />
-            <ModeSelector />
-          </div>
+      <div className="relative">
+        <div
+          className={`bg-animated-border bg-border-animation absolute -inset-px rounded-md transition-opacity duration-300 ease-in-out ${
+            isStreaming ? 'opacity-75' : 'opacity-0'
+          }`}
+          style={{
+            animation: isStreaming ? 'border-glow 4s linear infinite' : 'none'
+          }}
+        ></div>
+        <div
+          className={`relative rounded-md bg-lc-textarea-bg p-2 drop-shadow-md transition-all duration-300 ease-in-out group-focus-within/input:ring-1 group-focus-within/input:ring-blue-500 ${
+            isStreaming
+              ? 'shadow-[inset_0_0_12px_rgba(221,123,187,0.15),inset_0_0_8px_rgba(215,159,30,0.1),inset_0_0_6px_rgba(90,146,44,0.1),inset_0_0_4px_rgba(76,120,148,0.1)]'
+              : ''
+          }`}
+        >
+          <textarea
+            className="text-lc-text-primary sticky bottom-0 w-full resize-none bg-transparent px-1 placeholder:text-neutral-500 focus:outline-none"
+            placeholder="Type your message here..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isStreaming}
+          />
+          <div className="flex items-end justify-between">
+            <div className="flex items-center gap-1">
+              <ChatConfiguration />
+              <ModeSelector />
+            </div>
 
-          <button
-            type="submit"
-            className="disabled:opacity-500 cursor-pointer rounded-md px-1 py-1 text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
-            disabled={isStreaming || !input.trim() || !apiKey || !modelResponse}
-          >
-            {IoSend({})}
-          </button>
+            <button
+              type="submit"
+              className="disabled:opacity-500 cursor-pointer rounded-md px-1 py-1 text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
+              disabled={isStreaming || !input.trim() || !apiKey || !modelResponse}
+            >
+              {IoSend({})}
+            </button>
+          </div>
         </div>
       </div>
     </form>
