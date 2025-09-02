@@ -7,6 +7,7 @@ import { FormEvent, KeyboardEvent } from 'react';
 import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
+import { defaultConfig } from '@/utils/defaults';
 import { buildSystemPromptFromContentScript } from '@/utils/prompt-builder';
 import { ModeSelector } from './Mode';
 
@@ -32,7 +33,7 @@ export function ChatInput({
 
   const { value: config } = useStorageSetting<ModelConfig>({
     key: 'config',
-    defaultValue: { tools: false, reasoning: '', mode: 'learn' }
+    defaultValue: defaultConfig
   });
 
   async function handleSubmit(e: FormEvent) {
