@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Leetcode Sidecar",
-  "version": "0.1.0",
-  "description": "Coding Agent for LeetCode.",
+  "version": "1.0.0",
+  "description": "Sidecar is like Cursor for Leetcode, a helpful coding agent that lives next to your code!",
   "icons": {
     "128": "logo-100.png",
     "256": "logo-200.png"
