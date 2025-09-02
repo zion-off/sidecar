@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useCallback, useEffect, useRef } from 'react';
 
 interface AutoSmoothScrollOptions {
   /** px distance from bottom considered "at bottom" */
@@ -8,7 +8,7 @@ interface AutoSmoothScrollOptions {
   /** whether to always force scroll even if user scrolled up */
   force?: boolean;
   /** scroll behavior */
-  behavior?: ScrollBehavior;
+  behavior?: 'auto' | 'smooth';
 }
 
 /**
@@ -19,12 +19,7 @@ export function useAutoSmoothScroll(
   ref: RefObject<HTMLElement>,
   deps: unknown[],
   enabled: boolean,
-  {
-    bottomThreshold = 64,
-    bottomOffset = 0,
-    force = false,
-    behavior = 'smooth'
-  }: AutoSmoothScrollOptions = {}
+  { bottomThreshold = 64, bottomOffset = 0, force = false, behavior = 'smooth' }: AutoSmoothScrollOptions = {}
 ) {
   const atBottomRef = useRef(true);
   const frameRef = useRef<number | null>(null);
@@ -51,16 +46,21 @@ export function useAutoSmoothScroll(
   const scrollToBottom = useCallback(() => {
     const el = ref.current;
     if (!el) return;
-    const target = el.scrollHeight - el.clientHeight + bottomOffset;
-    // If already close, avoid redundant smooth triggers.
-    const delta = Math.abs(el.scrollTop - target);
-    if (delta < 4) return;
-    try {
-      el.scrollTo({ top: target, behavior });
-    } catch {
-      // Fallback for older browsers.
-      el.scrollTop = target;
-    }
+
+    // Use setTimeout to ensure DOM has updated
+    setTimeout(() => {
+      const target = el.scrollHeight - el.clientHeight + bottomOffset;
+      // If already close, avoid redundant smooth triggers.
+      const delta = Math.abs(el.scrollTop - target);
+      if (delta < 4) return;
+
+      try {
+        el.scrollTo({ top: target, behavior });
+      } catch {
+        // Fallback for older browsers.
+        el.scrollTop = target;
+      }
+    }, 0);
   }, [ref, bottomOffset, behavior]);
 
   // On dep changes schedule a scroll if conditions allow.
@@ -68,11 +68,11 @@ export function useAutoSmoothScroll(
     if (!enabled) return;
     if (!force && !atBottomRef.current) return; // Respect user manual scroll position.
 
-    if (frameRef.current != null) cancelAnimationFrame(frameRef.current);
-    frameRef.current = requestAnimationFrame(scrollToBottom);
+    if (frameRef.current != null) window.cancelAnimationFrame(frameRef.current);
+    frameRef.current = window.requestAnimationFrame(scrollToBottom);
     return () => {
-      if (frameRef.current != null) cancelAnimationFrame(frameRef.current);
+      if (frameRef.current != null) window.cancelAnimationFrame(frameRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, enabled, force, scrollToBottom]);
+  }, [...deps, enabled, force]);
 }
