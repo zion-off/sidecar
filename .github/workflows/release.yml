@@ -22,22 +22,21 @@ jobs:
           CURRENT_VERSION=$(jq -r '.version' src/public/manifest.json)
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-          # Get the version from main branch for comparison
-          git fetch origin main
-          if git show origin/main:src/public/manifest.json 2>/dev/null; then
-            MAIN_VERSION=$(git show origin/main:src/public/manifest.json | jq -r '.version')
-            echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+          # Check if this is the first commit or if version actually changed
+          if git show HEAD~1:src/public/manifest.json 2>/dev/null; then
+            PREVIOUS_VERSION=$(git show HEAD~1:src/public/manifest.json | jq -r '.version')
+            echo "previous_version=$PREVIOUS_VERSION" >> $GITHUB_OUTPUT
             
-            if [ "$CURRENT_VERSION" != "$MAIN_VERSION" ]; then
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
               echo "version_changed=true" >> $GITHUB_OUTPUT
-              echo "Version changed from $MAIN_VERSION (main) to $CURRENT_VERSION"
+              echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
             else
               echo "version_changed=false" >> $GITHUB_OUTPUT
-              echo "Version did not change from main branch ($CURRENT_VERSION)"
+              echo "Version did not change ($CURRENT_VERSION)"
             fi
           else
             echo "version_changed=true" >> $GITHUB_OUTPUT
-            echo "Could not find manifest.json in main branch, treating as version change"
+            echo "First commit or previous manifest not found, treating as version change"
           fi
 
       - name: Create Chrome extension zip
