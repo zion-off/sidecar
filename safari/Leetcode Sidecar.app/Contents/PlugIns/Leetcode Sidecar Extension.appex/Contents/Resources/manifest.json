@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Leetcode Sidecar",
+  "version": "1.0.0",
+  "description": "Sidecar is like Cursor for Leetcode, a helpful coding agent that lives next to your code!",
+  "icons": {
+    "128": "logo-100.png",
+    "256": "logo-200.png"
+  },
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["https://leetcode.com/problems/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["index.html", "assets/*"],
+      "matches": ["https://leetcode.com/*"]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "css": ["content.css"],
+      "js": ["content.js"]
+    }
+  ]
+}
