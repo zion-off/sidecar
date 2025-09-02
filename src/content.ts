@@ -1,69 +1,73 @@
 import { dragHandlebarSVG, openHandlebarSVG } from '@/assets/icons';
 
+// Individual data fetching functions
+export function getProblemTitle(): string {
+  const problemTitleElement =
+    document.querySelector('.text-title-large a[href*="/problems/"]') ||
+    document.querySelector('a[href*="/problems/"]:first-of-type');
+  return problemTitleElement?.textContent?.trim() || 'Unknown Problem';
+}
+
+export function getProblemDescription(): string {
+  const descriptionElement = document.querySelector('[data-track-load="description_content"]');
+  return descriptionElement?.innerHTML || '';
+}
+
+export function getLanguage(): string {
+  // Look for the language selector button with the specific pattern from LeetCode
+  const languageButton = document.querySelector('button[aria-haspopup="dialog"] .svg-inline--fa.fa-chevron-down');
+  if (languageButton && languageButton.parentElement) {
+    // Get the button element and extract text before the icon
+    const buttonElement = languageButton.parentElement;
+    const buttonText = buttonElement.childNodes[0]?.textContent?.trim();
+    if (buttonText) return buttonText;
+  }
+
+  // Alternative approach: look for button containing both text and chevron icon
+  const buttons = document.querySelectorAll('button[aria-haspopup="dialog"]');
+  for (const button of buttons) {
+    const hasChevron = button.querySelector('.fa-chevron-down');
+    if (hasChevron) {
+      // Extract text content excluding the icon
+      const textNode = Array.from(button.childNodes).find(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
+      );
+      if (textNode && textNode.textContent) {
+        return textNode.textContent.trim();
+      }
+    }
+  }
+
+  return 'Unknown';
+}
+
+export function getEditorContent(): string {
+  const viewLinesElement = document.querySelector('.view-lines[role="presentation"]');
+  if (!viewLinesElement) return '';
+  const viewLines = viewLinesElement.querySelectorAll('.view-line');
+  const lines: string[] = [];
+  viewLines.forEach((line) => {
+    const textContent = line.textContent || '';
+    const cleanedContent = textContent.replace(/\u00A0/g, ' ');
+    lines.push(cleanedContent);
+  });
+  return lines.join('\n');
+}
+
 async function main() {
   const appIframe = document.createElement('iframe');
   appIframe.id = 'extension-iframe';
   appIframe.allow = 'clipboard-read; clipboard-write';
   appIframe.src = chrome.runtime.getURL('index.html');
 
-  function sendPageDataToApp() {
-    const descriptionElement = document.querySelector('[data-track-load="description_content"]');
-    function extractEditorContent(): string {
-      const viewLinesElement = document.querySelector('.view-lines[role="presentation"]');
-      if (!viewLinesElement) return '';
-      const viewLines = viewLinesElement.querySelectorAll('.view-line');
-      const lines: string[] = [];
-      viewLines.forEach((line) => {
-        const textContent = line.textContent || '';
-        const cleanedContent = textContent.replace(/\u00A0/g, ' ');
-        lines.push(cleanedContent);
-      });
-      return lines.join('\n');
-    }
-
-    function extractCurrentLanguage(): string {
-      // Look for the language selector button with the specific pattern from LeetCode
-      const languageButton = document.querySelector('button[aria-haspopup="dialog"] .svg-inline--fa.fa-chevron-down');
-      if (languageButton && languageButton.parentElement) {
-        // Get the button element and extract text before the icon
-        const buttonElement = languageButton.parentElement;
-        const buttonText = buttonElement.childNodes[0]?.textContent?.trim();
-        if (buttonText) return buttonText;
-      }
-
-      // Alternative approach: look for button containing both text and chevron icon
-      const buttons = document.querySelectorAll('button[aria-haspopup="dialog"]');
-      for (const button of buttons) {
-        const hasChevron = button.querySelector('.fa-chevron-down');
-        if (hasChevron) {
-          // Extract text content excluding the icon
-          const textNode = Array.from(button.childNodes).find(
-            (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
-          );
-          if (textNode && textNode.textContent) {
-            return textNode.textContent.trim();
-          }
-        }
-      }
-
-      return 'Unknown';
-    }
-
-    if (descriptionElement && appIframe.contentWindow) {
-      const problemTitleElement =
-        document.querySelector('.text-title-large a[href*="/problems/"]') ||
-        document.querySelector('a[href*="/problems/"]:first-of-type');
-      const problemTitle = problemTitleElement?.textContent?.trim() || 'Unknown Problem';
-      const editorContent = extractEditorContent();
-      const currentLanguage = extractCurrentLanguage();
+  function sendProblemTitleToApp() {
+    if (appIframe.contentWindow) {
+      const problemTitle = getProblemTitle();
       appIframe.contentWindow.postMessage(
         {
-          type: 'PAGE_DATA_UPDATE',
+          type: 'PROBLEM_TITLE_UPDATE',
           data: {
             title: problemTitle,
-            description: descriptionElement.innerHTML,
-            editorContent: editorContent,
-            language: currentLanguage,
             timestamp: Date.now()
           }
         },
@@ -78,6 +82,27 @@ async function main() {
     const { type, code, highlights, suggestion, isAccept } = event.data;
 
     switch (type) {
+      case 'REQUEST_PROBLEM_TITLE':
+        sendProblemTitleToApp();
+        break;
+
+      case 'GET_PROBLEM_DATA':
+        // Send all problem data when requested
+        appIframe.contentWindow?.postMessage(
+          {
+            type: 'PROBLEM_DATA_RESPONSE',
+            data: {
+              title: getProblemTitle(),
+              description: getProblemDescription(),
+              editorContent: getEditorContent(),
+              language: getLanguage(),
+              timestamp: Date.now()
+            }
+          },
+          '*'
+        );
+        break;
+
       case 'INJECT_CODE':
         chrome.runtime.sendMessage({ type: 'INJECT_CODE_FROM_CONTENT_SCRIPT', code }, (response) => {
           if (chrome.runtime.lastError) console.error(chrome.runtime.lastError);
@@ -284,54 +309,23 @@ async function main() {
   mainContentContainer.insertAdjacentElement('afterend', appIframe);
   mainContentContainer.insertAdjacentElement('afterend', handlebar);
 
-  // Extract and display problem description initially
-  sendPageDataToApp();
+  // Wait for iframe to load before sending initial data
+  let titleSent = false;
 
-  // Set up a mutation observer to update content when the problem changes
-  let updateTimeout: ReturnType<typeof setTimeout>;
-  const problemObserver = new MutationObserver(() => {
-    // Debounce the updates to avoid too many calls
-    clearTimeout(updateTimeout);
-    updateTimeout = setTimeout(() => {
-      sendPageDataToApp();
-    }, 500);
-  });
-
-  // Observe changes to the problem content area
-  const problemContentArea = document.querySelector('#qd-content');
-  if (problemContentArea) {
-    problemObserver.observe(problemContentArea, {
-      childList: true,
-      subtree: true
-    });
-  }
-
-  // Also observe changes to the Monaco editor specifically
-  let editorUpdateTimeout: ReturnType<typeof setTimeout>;
-  const editorObserver = new MutationObserver(() => {
-    // Debounce editor updates separately with a shorter delay
-    clearTimeout(editorUpdateTimeout);
-    editorUpdateTimeout = setTimeout(() => {
-      sendPageDataToApp();
-    }, 200);
-  });
-
-  // Look for the Monaco editor container and observe it
-  const waitForEditor = () => {
-    const editorContainer = document.querySelector('.view-lines[role="presentation"]');
-    if (editorContainer) {
-      editorObserver.observe(editorContainer, {
-        childList: true,
-        subtree: true,
-        characterData: true
-      });
-    } else {
-      // If editor not found yet, try again after a short delay
-      setTimeout(waitForEditor, 1000);
+  const sendTitleWhenReady = () => {
+    if (!titleSent) {
+      sendProblemTitleToApp();
+      titleSent = true;
     }
   };
 
-  waitForEditor();
+  appIframe.addEventListener('load', () => {
+    // Small delay to ensure React app is mounted
+    setTimeout(sendTitleWhenReady, 100);
+  });
+
+  // Fallback: try sending after a longer delay in case load event doesn't fire
+  setTimeout(sendTitleWhenReady, 1000);
 
   // Listen for storage changes
   chrome.storage.onChanged.addListener((changes) => {
