@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Sidecar",
+  "name": "Leetcode Sidecar",
   "version": "0.1.0",
   "description": "Coding Agent for LeetCode.",
   "icons": {

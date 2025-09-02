@@ -11,13 +11,14 @@ export const defaultTools: Tool[] = [
     type: 'function',
     function: {
       name: 'suggest_code',
-      description: 'Suggest code snippets based on the provided context',
+      description:
+        'Invoke when the user asks for the solution. If the user intent is uncertain, seek clarification instead of invoking.',
       parameters: {
         type: 'object',
         properties: {
           suggestion: {
             type: 'string',
-            description: "The code that will replace the user's code"
+            description: 'The full new code to put in the editor, completely replacing existing content.'
           }
         },
         required: ['suggestion']
