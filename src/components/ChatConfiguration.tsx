@@ -89,10 +89,10 @@ export function ChatConfiguration() {
 
   return (
     <Popover onOpenChange={handlePopoverOpen}>
-      <PopoverTrigger className="rounded-md px-1 py-1 text-neutral-500 hover:bg-white/10">
+      <PopoverTrigger className="rounded-md px-1 py-1 text-xs text-neutral-500 hover:bg-white/10">
         {isLoadingModel ? 'Loading...' : displayName}
       </PopoverTrigger>
-      <PopoverContent className="bg-lc-bg-popover text-lc-text-primary border-none text-xs">
+      <PopoverContent className="text-lc-text-primary border-none bg-lc-bg-popover text-xs">
         <div className="grid gap-4">
           <PopoverHeader />
           <div className="grid gap-2">

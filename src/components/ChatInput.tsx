@@ -109,7 +109,7 @@ export function ChatInput({
       <div className="relative">
         {/* Animated border background */}
         <div
-          className={`bg-animated-border bg-border-animation absolute -inset-px rounded-md transition-opacity duration-300 ease-in-out ${
+          className={`absolute -inset-px rounded-md bg-animated-border bg-border-animation transition-opacity duration-300 ease-in-out ${
             isStreaming ? 'opacity-50 dark:opacity-75' : 'opacity-0'
           }`}
           style={{
@@ -126,7 +126,7 @@ export function ChatInput({
         >
           <textarea
             rows={3}
-            className="text-lc-text-primary sticky bottom-0 w-full resize-none bg-transparent px-1 placeholder:text-neutral-500 focus:outline-none"
+            className="text-lc-text-primary sticky bottom-0 w-full resize-none bg-transparent px-1 text-xs placeholder:text-neutral-500 focus:outline-none"
             placeholder="Ask about this problem"
             value={input}
             onChange={(e) => setInput(e.target.value)}
