@@ -13,4 +13,4 @@ Features:
 - Huge Model Catalog: Tap into 400+ models via OpenRouter, including many free ones (often up to \~1000 requests/day).
 - Stay in One Tab: Live read/write access means the AI sees the exact problem and code you’re working on—no copy-paste shuffle.
 
-Install for Chrome from the [Chrome Web Store](https://chromewebstore.google.com/detail/leetcode-sidecar/hadhfiombnnnoghclilpighelbhhmmmi?authuser=0&hl=en-GB), or for Safari from the [Releases](https://github.com/zion-off/sidecar/releases) page.
+Install for Chrome from the [Chrome Web Store](https://chromewebstore.google.com/detail/leetcode-sidecar/hadhfiombnnnoghclilpighelbhhmmmi?authuser=0&hl=en-GB), or manually from the [Releases](https://github.com/zion-off/sidecar/releases) page.
