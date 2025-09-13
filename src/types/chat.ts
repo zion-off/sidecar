@@ -25,6 +25,7 @@ export type StreamChatCompletionBody = {
   model: string;
   messages: MessageType[];
   stream?: boolean;
+  max_tokens?: number;
   reasoning?: {
     effort: ReasoningEffort;
   };

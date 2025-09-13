@@ -28,7 +28,8 @@ export class ChatCompletion {
     const body: StreamChatCompletionBody = {
       model: model,
       messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
-      stream: true
+      stream: true,
+      max_tokens: 2048
     };
 
     if (reasoning) {
