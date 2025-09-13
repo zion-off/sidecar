@@ -44,12 +44,6 @@ export function ChatInput({
 
     if (!input.trim() || !apiKey || isStreaming || !modelResponse) return;
 
-    const userMessage: MessageType = { content: input.trim(), role: 'user' };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsStreaming(true);
-    setStreamingMessage('');
-
     const client = new ChatCompletion({
       apiKey,
       onChunk: (_, fullMessage) => {
@@ -88,16 +82,32 @@ export function ChatInput({
       }
     });
 
+    const userMessage: MessageType = { content: input.trim(), role: 'user' };
     const pageData = await getPageData();
     const systemPrompt = buildSystemPrompt(pageData);
-    const prompt = [systemPrompt, ...messages.slice(1)];
     const editorContentPrompt = buildEditorContent(pageData);
+    const prompt = [
+      systemPrompt,
+      ...messages
+        .slice(1)
+        .filter((msg) => msg.type !== 'reasoning')
+        .map((msg) => ({ ...msg, role: msg.role === 'developer' ? 'user' : msg.role }))
+    ];
+
     if (!currentEditorContent || currentEditorContent.content !== editorContentPrompt.content) {
       setMessages((prev) => [...prev, editorContentPrompt]);
       setCurrentEditorContent(editorContentPrompt);
-      prompt.push(editorContentPrompt);
+      prompt.push({
+        ...editorContentPrompt,
+        role: editorContentPrompt.role === 'developer' ? 'user' : editorContentPrompt.role
+      });
     }
+
     prompt.push(userMessage);
+    setInput('');
+    setIsStreaming(true);
+    setStreamingMessage('');
+    setMessages((prev) => [...prev, userMessage]);
 
     await client.processStream(
       modelResponse.data.id,
