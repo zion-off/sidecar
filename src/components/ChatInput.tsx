@@ -3,12 +3,12 @@ import { ChatCompletion } from '@/open-router/chat';
 import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
-import { FormEvent, KeyboardEvent } from 'react';
+import { FormEvent, KeyboardEvent, useState } from 'react';
 import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { defaultConfig } from '@/utils/defaults';
-import { buildSystemPromptFromContentScript } from '@/utils/prompt-builder';
+import { buildEditorContent, buildSystemPrompt, getPageData } from '@/utils/prompt-builder';
 import { AnimatedGlowBorder } from './AnimatedGlowBorder';
 import { ModeSelector } from './Mode';
 
@@ -22,6 +22,8 @@ export function ChatInput({
   setMessages,
   showSuggestions
 }: ChatInputProps) {
+  const [currentEditorContent, setCurrentEditorContent] = useState<null | MessageType>();
+
   const { value: apiKey } = useStorageSetting({
     key: 'apiKey',
     defaultValue: ''
@@ -86,13 +88,21 @@ export function ChatInput({
       }
     });
 
-    // Get system prompt with current page data
-    const systemPrompt = await buildSystemPromptFromContentScript();
+    const pageData = await getPageData();
+    const systemPrompt = buildSystemPrompt(pageData);
+    const prompt = [systemPrompt, ...messages.slice(1)];
+    const editorContentPrompt = buildEditorContent(pageData);
+    if (!currentEditorContent || currentEditorContent.content !== editorContentPrompt.content) {
+      setMessages((prev) => [...prev, editorContentPrompt]);
+      setCurrentEditorContent(editorContentPrompt);
+      prompt.push(editorContentPrompt);
+    }
+    prompt.push(userMessage);
 
     await client.processStream(
       modelResponse.data.id,
       config.reasoning,
-      [systemPrompt, ...messages.slice(1), userMessage],
+      prompt,
       config.mode === 'agent' ? defaultTools : undefined
     );
   }

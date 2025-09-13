@@ -33,9 +33,26 @@ export function buildSystemPrompt(pageData: PageData, customInstructions: string
   };
 }
 
-export async function buildSystemPromptFromContentScript(customInstructions: string = ''): Promise<MessageType> {
+export function buildEditorContent(pageData: PageData): MessageType {
+  return {
+    role: 'system',
+    content: `
+    ${
+      pageData.editorContent.length > 0
+        ? `
+    Here is the user's current code:
+
+    \`\`\`${pageData.language}
+    ${pageData.editorContent}
+    \`\`\`
+    `
+        : ''
+    }`
+  };
+}
+
+export async function getPageData(): Promise<PageData> {
   return new Promise((resolve) => {
-    // Request problem data from content script
     window.parent.postMessage({ type: 'GET_PROBLEM_DATA' }, '*');
 
     // Listen for the response
@@ -43,7 +60,7 @@ export async function buildSystemPromptFromContentScript(customInstructions: str
       if (event.data.type === 'PROBLEM_DATA_RESPONSE') {
         window.removeEventListener('message', handleMessage);
         const pageData = event.data.data;
-        resolve(buildSystemPrompt(pageData, customInstructions));
+        resolve(pageData as PageData);
       }
     };
 
