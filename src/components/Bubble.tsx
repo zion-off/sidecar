@@ -3,7 +3,7 @@ import { parseMarkdown } from '@/utils/markdown';
 import { stripControlPreamble } from '@/utils/messaging';
 
 export function Bubble({ content, role, type = 'content' }: MessageType) {
-  if (role === 'system') return null;
+  if (role === 'system' || role === 'developer') return null;
 
   const safe = stripControlPreamble(content);
   return (

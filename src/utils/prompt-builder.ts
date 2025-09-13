@@ -17,30 +17,18 @@ export function buildSystemPrompt(pageData: PageData, customInstructions: string
     ${String(pageData.description)}
     \`\`\`
 
-    ${
-      pageData.editorContent.length > 0
-        ? `
-    Here is the user's current code:
-
-    \`\`\`${pageData.language}
-    ${pageData.editorContent}
-    \`\`\`
-    `
-        : ''
-    }
-
     Use this context to answer the user's questions.`
   };
 }
 
 export function buildEditorContent(pageData: PageData): MessageType {
   return {
-    role: 'system',
-    content: `
-    ${
+    role: 'developer',
+    content: `${
       pageData.editorContent.length > 0
-        ? `
-    Here is the user's current code:
+        ? `[CURRENT LEETCODE EDITOR CONTENT]
+
+    Here is the user's current code currently visible in their code editor:
 
     \`\`\`${pageData.language}
     ${pageData.editorContent}
