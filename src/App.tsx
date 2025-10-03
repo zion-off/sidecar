@@ -1,4 +1,5 @@
 import { HiMiniSparkles } from 'react-icons/hi2';
+import { TbReload } from 'react-icons/tb';
 import { Toaster } from 'sonner';
 import { useCallback, useEffect, useState } from 'react';
 import { InjectionStatus } from '@/types/editor';
@@ -9,6 +10,7 @@ function App() {
   const [problemTitle, setProblemTitle] = useState<string | null>(null);
   const [injectionStatus, setInjectionStatus] = useState<InjectionStatus>({});
   const [activeSuggestion, setActiveSuggestion] = useState<boolean>(false);
+  const [resetKey, setResetKey] = useState(0);
 
   const sendCodeToEditor = useCallback((code: string) => {
     setInjectionStatus({});
@@ -65,7 +67,6 @@ function App() {
 
     window.addEventListener('message', handleMessage);
 
-    // Request initial problem title after component mounts
     setTimeout(() => {
       postMessageToParent({ type: 'REQUEST_PROBLEM_TITLE' });
     }, 500);
@@ -86,12 +87,22 @@ function App() {
   return (
     <div className="flex h-full w-full max-w-full flex-col overflow-hidden bg-lc-bg-base">
       <Toaster />
-      <div className="flex h-9 items-center gap-1 bg-lc-layer-one p-1 px-3">
-        {HiMiniSparkles({ className: 'text-yellow-500' })}
-        <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
+      <div className="flex h-9 items-center justify-between bg-lc-layer-one p-1 px-3">
+        <span className="flex items-center gap-1">
+          {HiMiniSparkles({ className: 'text-yellow-500' })}
+          <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
+        </span>
+        <span
+          onClick={() => setResetKey((prev) => prev + 1)}
+          className="-mr-2 flex aspect-square h-full cursor-pointer items-center justify-center rounded-md text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
+          title="Reset chat"
+        >
+          {TbReload({ className: 'h-3 w-3' })}
+        </span>
       </div>
 
       <Chat
+        key={resetKey}
         problemTitle={problemTitle}
         activeSuggestion={activeSuggestion}
         injectionStatus={injectionStatus}
