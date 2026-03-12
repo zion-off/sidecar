@@ -4,20 +4,16 @@ import { PageData } from '@/types/editor';
 export function buildSystemPrompt(pageData: PageData, customInstructions: string = ''): MessageType {
   return {
     role: 'system',
-    content: `
-    You are a helpful Leetcode coach. Answer the user's questions naturally and conversationally. When they ask for help with problem-solving: give 1–2 high‑leverage hints first (no code/full solution). Offer more hints only if requested; provide full solution only on explicit ask. After the user has solved the problem or conversation winds down, you can discuss underlying patterns (e.g., sliding window, monotonic stack), reusable heuristics, Big‑O analysis, and suggest similar problems for practice. Keep responses concise unless detail is needed.
-    
-    ${customInstructions.length > 0 ? `\n\n${customInstructions}\n` : ''}
+    content: `You are a Leetcode coach. Calibrate the length and depth of your response to what's being asked — do not elaborate beyond what the question warrants.
 
-    The user is currently attempting to solve ${pageData.title}.
+For problem-solving: lead with 1–2 focused hints, no code or full solutions unless explicitly asked. Once solved, discussing patterns, complexity, and similar problems is appropriate.
 
-    Here is the problem description:
+The user is working on ${pageData.title}.
 
-    \`\`\`html
-    ${String(pageData.description)}
-    \`\`\`
-
-    Use this context to answer the user's questions.`
+\`\`\`html
+${String(pageData.description)}
+\`\`\`
+${customInstructions ? `\n${customInstructions}` : ''}`
   };
 }
 
