@@ -73,6 +73,6 @@ export function useAutoSmoothScroll(
     return () => {
       if (frameRef.current != null) window.cancelAnimationFrame(frameRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [...deps, enabled, force]);
 }

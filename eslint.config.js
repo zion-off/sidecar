@@ -27,6 +27,7 @@ export default [
         KeyboardEvent: 'readonly',
         HTMLElement: 'readonly',
         HTMLDivElement: 'readonly',
+        HTMLInputElement: 'readonly',
         Element: 'readonly',
         MutationObserver: 'readonly',
         Response: 'readonly',

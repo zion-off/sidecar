@@ -2,7 +2,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useStorageSetting } from '@/hooks/useStorageSetting';
 import { getModelEndpoints } from '@/open-router/model';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { PopoverHeader } from '@/components/PopoverHeader';
 import { ReasoningEffort } from '@/components/Reasoning';
@@ -16,7 +16,6 @@ export function ChatConfiguration() {
     key: 'apiKey',
     defaultValue: ''
   });
-
   const { value: modelResponse, setValue: setModelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
     key: 'model',
     defaultValue: null
@@ -26,69 +25,87 @@ export function ChatConfiguration() {
     defaultValue: defaultConfig
   });
 
-  const [localApiKey, setLocalApiKey] = useState<string>(apiKey);
-  const [modelInput, setModelInput] = useState(modelResponse?.data.id || '');
+  const [isOpen, setIsOpen] = useState(false);
+  const [localApiKey, setLocalApiKey] = useState('');
+  const [localModelInput, setLocalModelInput] = useState('');
   const [isLoadingModel, setIsLoadingModel] = useState(false);
-  const [modelDirty, setModelDirty] = useState(false);
-  const debouncedModelInput = useDebounce(modelInput, 500);
+  const debouncedModelInput = useDebounce(localModelInput, 500);
 
-  const handlePopoverOpen = (open: boolean) => {
+  // Refs to avoid stale closures in resolveModel without circular deps
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  const modelResponseRef = useRef(modelResponse);
+  useEffect(() => {
+    modelResponseRef.current = modelResponse;
+  }, [modelResponse]);
+
+  // Tracks whether the user has actually typed, so the debounce effect doesn't
+  // fire when we programmatically set localModelInput on open
+  const hasInteracted = useRef(false);
+
+  const resolveModel = useCallback(
+    async (modelId: string) => {
+      const trimmed = modelId.trim();
+
+      if (!trimmed) {
+        setModelResponse(null);
+        return;
+      }
+
+      if (trimmed === modelResponseRef.current?.data.id) return;
+
+      const parts = trimmed.split('/');
+      if (parts.length !== 2) {
+        setModelResponse(null);
+        return;
+      }
+
+      const [author, slug] = parts;
+      setIsLoadingModel(true);
+
+      try {
+        const response = await getModelEndpoints(author, slug);
+        setModelResponse(response);
+        const supportedParams = response.data.endpoints[0]?.supported_parameters || [];
+        setConfig({
+          tools: supportedParams.includes('tools'),
+          reasoning: supportedParams.includes('reasoning') ? configRef.current.reasoning : '',
+          mode: supportedParams.includes('tools') ? configRef.current.mode : 'learn'
+        });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        toast.error(`Failed to fetch model endpoints: ${message}`);
+        setModelResponse(null);
+      } finally {
+        setIsLoadingModel(false);
+      }
+    },
+    [setModelResponse, setConfig]
+  );
+
+  useEffect(() => {
+    if (!hasInteracted.current) return;
+    resolveModel(debouncedModelInput);
+  }, [debouncedModelInput, resolveModel]);
+
+  const handleOpenChange = (open: boolean) => {
     if (open) {
+      hasInteracted.current = false;
       setLocalApiKey(apiKey);
-      setModelInput(modelResponse?.data.id || '');
-      setModelInput(modelResponse?.data.id || '');
+      setLocalModelInput(modelResponse?.data.id || '');
     } else {
       setApiKey(localApiKey);
     }
+    setIsOpen(open);
   };
 
-  useEffect(() => {
-    if (!modelDirty) return;
-
-    if (!modelInput.trim()) {
-      setModelResponse(null);
-      return;
-    }
-
-    if (!debouncedModelInput.trim()) {
-      setModelResponse(null);
-      return;
-    }
-
-    const parts = debouncedModelInput.split('/');
-    if (parts.length !== 2) {
-      setModelResponse(null);
-      return;
-    }
-
-    const [author, slug] = parts;
-    setIsLoadingModel(true);
-
-    getModelEndpoints(author, slug)
-      .then((response) => {
-        setModelResponse(response);
-        const supportedParams = response.data.endpoints[0]?.supported_parameters || [];
-        const newConfig: ModelConfig = {
-          tools: supportedParams.includes('tools'),
-          reasoning: supportedParams.includes('reasoning') ? config.reasoning : '',
-          mode: supportedParams.includes('tools') ? config.mode : 'learn'
-        };
-        setConfig(newConfig);
-      })
-      .catch((error) => {
-        toast.error(`Failed to fetch model endpoints: ${error.message || 'Unknown error'}`);
-        setModelResponse(null);
-      })
-      .finally(() => {
-        setIsLoadingModel(false);
-        setModelDirty(false);
-      });
-  }, [debouncedModelInput, modelDirty]);
-
-  const displayName = modelResponse?.data.id.split('/')[1].slice(0, 40) || 'Model not configured';
+  const displayName = modelResponse?.data.id.split('/')[1]?.slice(0, 40) || 'Model not configured';
 
   return (
-    <Popover onOpenChange={handlePopoverOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger className="rounded-md px-1 py-1 text-xs text-neutral-500 hover:bg-white/10">
         {isLoadingModel ? 'Loading...' : displayName}
       </PopoverTrigger>
@@ -114,10 +131,10 @@ export function ChatConfiguration() {
               </Label>
               <Input
                 id="model"
-                value={modelInput}
+                value={localModelInput}
                 onChange={(e) => {
-                  setModelInput(e.target.value);
-                  setModelDirty(true);
+                  hasInteracted.current = true;
+                  setLocalModelInput(e.target.value);
                 }}
                 placeholder="anthropic/claude-3-sonnet"
                 className="col-span-2 h-8 border-white/10 text-xs placeholder:text-xs focus-visible:ring-0"
