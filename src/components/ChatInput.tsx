@@ -3,7 +3,7 @@ import { ChatCompletion } from '@/open-router/chat';
 import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
-import { FormEvent, KeyboardEvent, useState } from 'react';
+import { FormEvent, KeyboardEvent, useRef } from 'react';
 import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
@@ -22,7 +22,7 @@ export function ChatInput({
   setMessages,
   showSuggestions
 }: ChatInputProps) {
-  const [currentEditorContent, setCurrentEditorContent] = useState<null | MessageType>();
+  const currentEditorContent = useRef<MessageType | null>(null);
 
   const { value: apiKey } = useStorageSetting({
     key: 'apiKey',
@@ -94,9 +94,9 @@ export function ChatInput({
         .map((msg) => ({ ...msg, role: msg.role === 'developer' ? 'user' : msg.role }))
     ];
 
-    if (!currentEditorContent || currentEditorContent.content !== editorContentPrompt.content) {
+    if (!currentEditorContent.current || currentEditorContent.current.content !== editorContentPrompt.content) {
       setMessages((prev) => [...prev, editorContentPrompt]);
-      setCurrentEditorContent(editorContentPrompt);
+      currentEditorContent.current = editorContentPrompt;
       prompt.push({
         ...editorContentPrompt,
         role: editorContentPrompt.role === 'developer' ? 'user' : editorContentPrompt.role
