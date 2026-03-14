@@ -15,7 +15,6 @@ export function Chat({
   resolveSuggestion
 }: ChatProps) {
   const [messages, setMessages] = useState(seedChat(problemTitle));
-  const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -34,8 +33,6 @@ export function Chat({
       <div className="flex-shrink-0">
         <Suggestion activeSuggestion={activeSuggestion} resolveSuggestion={resolveSuggestion} />
         <ChatInput
-          input={input}
-          setInput={setInput}
           isStreaming={isStreaming}
           setIsStreaming={setIsStreaming}
           setStreamingMessage={setStreamingMessage}

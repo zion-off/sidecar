@@ -3,7 +3,7 @@ import { ChatCompletion } from '@/open-router/chat';
 import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
-import { FormEvent, KeyboardEvent, useRef } from 'react';
+import { FormEvent, KeyboardEvent, useRef, useState } from 'react';
 import type { ChatInputProps, MessageType } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
@@ -13,8 +13,6 @@ import { AnimatedGlowBorder } from './AnimatedGlowBorder';
 import { ModeSelector } from './Mode';
 
 export function ChatInput({
-  input,
-  setInput,
   isStreaming,
   setIsStreaming,
   setStreamingMessage,
@@ -22,6 +20,7 @@ export function ChatInput({
   setMessages,
   showSuggestions
 }: ChatInputProps) {
+  const [input, setInput] = useState('');
   const currentEditorContent = useRef<MessageType | null>(null);
 
   const { value: apiKey } = useStorageSetting({

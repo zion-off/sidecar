@@ -44,8 +44,6 @@ export type ChatProps = {
 export type SuggestionProps = Pick<ChatProps, 'activeSuggestion' | 'resolveSuggestion'>;
 
 export type ChatInputProps = {
-  input: string;
-  setInput: (value: string) => void;
   isStreaming: boolean;
   setIsStreaming: (value: boolean) => void;
   setStreamingMessage: (value: string) => void;
