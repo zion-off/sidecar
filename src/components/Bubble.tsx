@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { MessageType } from '@/types/chat';
 import { parseMarkdown } from '@/utils/markdown';
 import { stripControlPreamble } from '@/utils/messaging';
 
-export function Bubble({ content, role, type = 'content' }: MessageType) {
+export const Bubble = memo(function Bubble({ content, role, type = 'content' }: MessageType) {
   if (role === 'system' || role === 'developer') return null;
 
   const safe = stripControlPreamble(content);
@@ -18,4 +19,4 @@ export function Bubble({ content, role, type = 'content' }: MessageType) {
       </div>
     </div>
   );
-}
+});
