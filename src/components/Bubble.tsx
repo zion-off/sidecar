@@ -7,7 +7,8 @@ export const Bubble = memo(function Bubble({ content, role, type = 'content' }: 
   const safe = stripControlPreamble(content);
   const html = useMemo(() => parseMarkdown(safe), [safe]);
 
-  if (role === 'system' || role === 'developer') return null;
+  if (role === 'system' || role === 'developer' || role === 'tool') return null;
+  if (!content) return null;
   return (
     <div className={`flex text-sm ${role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
       <div

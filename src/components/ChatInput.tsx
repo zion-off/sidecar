@@ -3,8 +3,8 @@ import { ChatCompletion } from '@/open-router/chat';
 import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
-import { FormEvent, KeyboardEvent, useRef, useState } from 'react';
-import type { ChatInputProps, MessageType } from '@/types/chat';
+import { FormEvent, KeyboardEvent, useCallback, useRef, useState } from 'react';
+import type { ChatInputProps, MessageType, ToolCallInfo } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { defaultConfig } from '@/utils/defaults';
@@ -18,10 +18,14 @@ export function ChatInput({
   setStreamingMessage,
   messages,
   setMessages,
-  showSuggestions
+  showSuggestions,
+  onToolCallResolverReady
 }: ChatInputProps) {
   const [input, setInput] = useState('');
   const currentEditorContent = useRef<MessageType | null>(null);
+  const pendingToolCalls = useRef<ToolCallInfo[] | null>(null);
+  const clientRef = useRef<InstanceType<typeof ChatCompletion> | null>(null);
+  const resolveToolCallRef = useRef<((_v: boolean) => void) | null>(null);
 
   const { value: apiKey } = useStorageSetting({
     key: 'apiKey',
@@ -38,12 +42,8 @@ export function ChatInput({
     defaultValue: defaultConfig
   });
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-
-    if (!input.trim() || !apiKey || isStreaming || !modelResponse) return;
-
-    const client = new ChatCompletion({
+  function createClient() {
+    return new ChatCompletion({
       apiKey,
       onChunk: (_, fullMessage) => {
         setStreamingMessage(fullMessage);
@@ -62,16 +62,30 @@ export function ChatInput({
           showSuggestions(args.suggestion);
         }
       },
+      onToolCallComplete: (toolCalls) => {
+        pendingToolCalls.current = toolCalls;
+        const assistantToolMessage: MessageType = {
+          content: '',
+          role: 'assistant',
+          tool_calls: toolCalls
+        };
+        setMessages((prev) => [...prev, assistantToolMessage]);
+        onToolCallResolverReady((accepted: boolean) => resolveToolCallRef.current?.(accepted));
+      },
       onComplete: (fullMessage) => {
         const assistantMessage: MessageType = { content: fullMessage, role: 'assistant' };
         setMessages((prev) => [...prev, assistantMessage]);
         setIsStreaming(false);
         setStreamingMessage('');
+        pendingToolCalls.current = null;
+        onToolCallResolverReady(null);
       },
       onError: (error) => {
         toast.warning(error.message || 'An error occurred while fetching the response.');
         setIsStreaming(false);
         setStreamingMessage('');
+        pendingToolCalls.current = null;
+        onToolCallResolverReady(null);
         setMessages((prev) => {
           if (prev.length > 0 && prev[prev.length - 1].role === 'user') {
             return prev.slice(0, -1);
@@ -80,10 +94,67 @@ export function ChatInput({
         });
       }
     });
+  }
+
+  const resolveToolCall = useCallback(
+    async (accepted: boolean) => {
+      if (!pendingToolCalls.current || !modelResponse) return;
+
+      const toolResultMessages: MessageType[] = pendingToolCalls.current.map((tc) => ({
+        content: accepted
+          ? 'The user accepted the suggestion. It has been applied to the editor.'
+          : 'The user rejected the suggestion. It has been reverted.',
+        role: 'tool' as const,
+        tool_call_id: tc.id
+      }));
+
+      let allMessages: MessageType[] = [];
+      setMessages((prev) => {
+        allMessages = [...prev, ...toolResultMessages];
+        return allMessages;
+      });
+
+      pendingToolCalls.current = null;
+      onToolCallResolverReady(null);
+      setIsStreaming(true);
+      setStreamingMessage('');
+
+      const client = createClient();
+      clientRef.current = client;
+
+      const pageData = await getPageData();
+      const systemPrompt = buildSystemPrompt(pageData, { agentMode: config.mode === 'agent' });
+      const prompt = [
+        systemPrompt,
+        ...allMessages
+          .slice(1)
+          .filter((msg) => msg.type !== 'reasoning')
+          .map((msg) => ({ ...msg, role: msg.role === 'developer' ? 'user' : msg.role }))
+      ];
+
+      await client.processStream(
+        modelResponse.data.id,
+        config.reasoning,
+        prompt,
+        config.mode === 'agent' ? defaultTools : undefined
+      );
+    },
+    [modelResponse, config.reasoning, config.mode, apiKey]
+  );
+
+  resolveToolCallRef.current = resolveToolCall;
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    if (!input.trim() || !apiKey || isStreaming || !modelResponse) return;
+
+    const client = createClient();
+    clientRef.current = client;
 
     const userMessage: MessageType = { content: input.trim(), role: 'user' };
     const pageData = await getPageData();
-    const systemPrompt = buildSystemPrompt(pageData);
+    const systemPrompt = buildSystemPrompt(pageData, { agentMode: config.mode === 'agent' });
     const editorContentPrompt = buildEditorContent(pageData);
     const prompt = [
       systemPrompt,

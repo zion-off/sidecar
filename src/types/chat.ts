@@ -3,10 +3,21 @@ import { ToolFunctionArgs } from '@/open-router/tools';
 import { InjectionStatus } from '@/types/editor';
 import type { ReasoningEffort, Tool } from '@/types/open-router';
 
+export type ToolCallInfo = {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+};
+
 export type MessageType = {
   content: string;
   role: 'system' | 'developer' | 'user' | 'assistant' | 'tool';
   type?: 'content' | 'reasoning';
+  tool_calls?: ToolCallInfo[];
+  tool_call_id?: string;
 };
 
 export type StreamChatCompletionOptions = {
@@ -17,6 +28,7 @@ export type StreamChatCompletionOptions = {
   onChunk: (content: string, fullMessage: string) => void;
   onReasoning?: (reasoning: string) => void;
   onToolCall: <T extends keyof ToolFunctionArgs>(toolName: T, args: ToolFunctionArgs[T]) => void;
+  onToolCallComplete: (toolCalls: ToolCallInfo[]) => void;
   onComplete: (fullMessage: string) => void;
   onError: (error: Error) => void;
 };
@@ -50,4 +62,5 @@ export type ChatInputProps = {
   messages: MessageType[];
   setMessages: (fn: (prev: MessageType[]) => MessageType[]) => void;
   showSuggestions: (suggestedCode?: string) => void;
+  onToolCallResolverReady: (resolver: ((accepted: boolean) => void) | null) => void;
 };

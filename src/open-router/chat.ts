@@ -1,5 +1,5 @@
 import { ToolFunctionArgs } from '@/open-router/tools';
-import type { MessageType, StreamChatCompletionBody, StreamChatCompletionOptions } from '@/types/chat';
+import type { MessageType, StreamChatCompletionBody, StreamChatCompletionOptions, ToolCallInfo } from '@/types/chat';
 import { ReasoningEffort, Tool } from '@/types/open-router';
 
 export class ChatCompletion {
@@ -7,6 +7,7 @@ export class ChatCompletion {
   private onChunk: StreamChatCompletionOptions['onChunk'];
   private onReasoning: StreamChatCompletionOptions['onReasoning'];
   private onToolCall: StreamChatCompletionOptions['onToolCall'];
+  private onToolCallComplete: StreamChatCompletionOptions['onToolCallComplete'];
   private onComplete: StreamChatCompletionOptions['onComplete'];
   private onError: StreamChatCompletionOptions['onError'];
 
@@ -15,6 +16,7 @@ export class ChatCompletion {
     this.onChunk = options.onChunk;
     this.onReasoning = options.onReasoning;
     this.onToolCall = options.onToolCall;
+    this.onToolCallComplete = options.onToolCallComplete;
     this.onComplete = options.onComplete;
     this.onError = options.onError;
   }
@@ -27,7 +29,12 @@ export class ChatCompletion {
   ): StreamChatCompletionBody {
     const body: StreamChatCompletionBody = {
       model: model,
-      messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
+      messages: messages.map((msg) => {
+        const m: Record<string, unknown> = { role: msg.role, content: msg.content };
+        if (msg.tool_calls) m.tool_calls = msg.tool_calls;
+        if (msg.tool_call_id) m.tool_call_id = msg.tool_call_id;
+        return m as MessageType;
+      }),
       stream: true,
       max_tokens: 2048
     };
@@ -88,7 +95,8 @@ export class ChatCompletion {
     let buffer = '';
     let fullMessage = '';
     let reasoningAccumulated = '';
-    const toolCalls: { [index: number]: { name: string; arguments: string } } = {};
+    let finishedWithToolCalls = false;
+    const toolCalls: { [index: number]: { id: string; name: string; arguments: string } } = {};
 
     try {
       while (true) {
@@ -119,7 +127,11 @@ export class ChatCompletion {
                   const index = toolCall.index ?? 0;
 
                   if (!toolCalls[index]) {
-                    toolCalls[index] = { name: '', arguments: '' };
+                    toolCalls[index] = { id: '', name: '', arguments: '' };
+                  }
+
+                  if (toolCall.id) {
+                    toolCalls[index].id = toolCall.id;
                   }
 
                   if (toolCall.function?.name) {
@@ -133,10 +145,20 @@ export class ChatCompletion {
               }
 
               if (parsed.choices?.[0]?.finish_reason === 'tool_calls') {
+                const completedToolCalls: ToolCallInfo[] = [];
                 for (const toolCall of Object.values(toolCalls)) {
                   if (toolCall.name && toolCall.arguments) {
                     this.onToolCall?.(toolCall.name as keyof ToolFunctionArgs, JSON.parse(toolCall.arguments));
+                    completedToolCalls.push({
+                      id: toolCall.id,
+                      type: 'function',
+                      function: { name: toolCall.name, arguments: toolCall.arguments }
+                    });
                   }
+                }
+                if (completedToolCalls.length > 0) {
+                  finishedWithToolCalls = true;
+                  this.onToolCallComplete?.(completedToolCalls);
                 }
                 break;
               }
@@ -181,7 +203,9 @@ export class ChatCompletion {
       reader.cancel();
     }
 
-    this.onComplete(fullMessage);
+    if (!finishedWithToolCalls) {
+      this.onComplete(fullMessage);
+    }
   }
 
   public async processStream(

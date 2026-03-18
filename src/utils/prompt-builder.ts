@@ -1,13 +1,17 @@
 import { MessageType } from '@/types/chat';
 import { PageData } from '@/types/editor';
 
-export function buildSystemPrompt(pageData: PageData, customInstructions: string = ''): MessageType {
+export function buildSystemPrompt(
+  pageData: PageData,
+  options: { agentMode?: boolean; customInstructions?: string } = {}
+): MessageType {
+  const { agentMode = false, customInstructions = '' } = options;
   return {
     role: 'system',
     content: `You are a Leetcode coach. Calibrate the length and depth of your response to what's being asked — do not elaborate beyond what the question warrants.
 
 For problem-solving: lead with 1–2 focused hints, no code or full solutions unless explicitly asked. Once solved, discussing patterns, complexity, and similar problems is appropriate.
-
+${agentMode ? '\nWhen you use the suggest_code tool, the code is applied directly to the user\'s editor. After a tool result confirms acceptance or rejection, respond briefly — the user already has the code in their editor, so do not repeat it in chat.\n' : ''}
 The user is working on ${pageData.title}.
 
 \`\`\`html
