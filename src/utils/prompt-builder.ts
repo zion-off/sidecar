@@ -53,6 +53,20 @@ export function buildEditorContent(pageData: PageData): MessageType {
   };
 }
 
+export function buildSelectedText(pageData: PageData): MessageType | null {
+  if (!pageData.selectedText) return null;
+  return {
+    role: 'developer',
+    content: `[SELECTED CODE]
+
+The user has highlighted the following code in the editor:
+
+\`\`\`${pageData.language}
+${pageData.selectedText}
+\`\`\``
+  };
+}
+
 export async function getPageData(): Promise<PageData> {
   return new Promise((resolve) => {
     window.parent.postMessage({ type: 'GET_PROBLEM_DATA' }, '*');

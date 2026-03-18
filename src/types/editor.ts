@@ -4,6 +4,7 @@ export type PageData = {
   editorContent: string;
   language: string;
   timestamp: number;
+  selectedText?: string;
 };
 
 export type Suggestion = {

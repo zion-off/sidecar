@@ -75,6 +75,19 @@ export async function getEditorContentAsync(): Promise<string> {
   });
 }
 
+export async function getEditorSelectionAsync(): Promise<string> {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'GET_EDITOR_SELECTION_FROM_CONTENT_SCRIPT' }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error getting editor selection from background:', chrome.runtime.lastError);
+        resolve('');
+      } else {
+        resolve(response?.selectedText || '');
+      }
+    });
+  });
+}
+
 async function main() {
   const appIframe = document.createElement('iframe');
   appIframe.id = 'extension-iframe';
@@ -110,7 +123,10 @@ async function main() {
       case 'GET_PROBLEM_DATA':
         // Send all problem data when requested
         (async () => {
-          const editorContent = await getEditorContentAsync();
+          const [editorContent, selectedText] = await Promise.all([
+            getEditorContentAsync(),
+            getEditorSelectionAsync()
+          ]);
           appIframe.contentWindow?.postMessage(
             {
               type: 'PROBLEM_DATA_RESPONSE',
@@ -119,7 +135,8 @@ async function main() {
                 description: getProblemDescription(),
                 editorContent: editorContent,
                 language: getLanguage(),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                selectedText: selectedText || undefined
               }
             },
             '*'
@@ -171,10 +188,15 @@ async function main() {
   window.addEventListener(
     'message',
     (event) => {
-      if (event.source !== window || !event.data.type?.startsWith('SUGGESTION_')) return;
+      if (event.source !== window) return;
 
       if (event.data.type === 'SUGGESTION_RESOLVED_FROM_PAGE') {
         appIframe.contentWindow?.postMessage({ type: 'SUGGESTION_RESOLVED' }, '*');
+      } else if (event.data.type === 'MONACO_SELECTION_CHANGED') {
+        appIframe.contentWindow?.postMessage(
+          { type: 'SELECTION_CHANGED', selectedText: event.data.selectedText },
+          '*'
+        );
       }
     },
     false
@@ -350,6 +372,7 @@ async function main() {
   appIframe.addEventListener('load', () => {
     // Small delay to ensure React app is mounted
     setTimeout(sendTitleWhenReady, 100);
+    chrome.runtime.sendMessage({ type: 'SETUP_SELECTION_LISTENER_FROM_CONTENT_SCRIPT' });
   });
 
   // Fallback: try sending after a longer delay in case load event doesn't fire

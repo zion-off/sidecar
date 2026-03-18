@@ -3,14 +3,15 @@ import { ChatCompletion } from '@/open-router/chat';
 import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
-import { FormEvent, KeyboardEvent, useCallback, useRef, useState } from 'react';
+import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatInputProps, MessageType, ToolCallInfo } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { defaultConfig } from '@/utils/defaults';
-import { buildEditorContent, buildSystemPrompt, getPageData } from '@/utils/prompt-builder';
+import { buildEditorContent, buildSelectedText, buildSystemPrompt, getPageData } from '@/utils/prompt-builder';
 import { AnimatedGlowBorder } from './AnimatedGlowBorder';
 import { ModeSelector } from './Mode';
+import { SelectionBadge } from './SelectionBadge';
 
 export function ChatInput({
   isStreaming,
@@ -22,7 +23,18 @@ export function ChatInput({
   onToolCallResolverReady
 }: ChatInputProps) {
   const [input, setInput] = useState('');
+  const [selectionPreview, setSelectionPreview] = useState('');
   const currentEditorContent = useRef<MessageType | null>(null);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'SELECTION_CHANGED') {
+        setSelectionPreview(event.data.selectedText || '');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
   const pendingToolCalls = useRef<ToolCallInfo[] | null>(null);
   const clientRef = useRef<InstanceType<typeof ChatCompletion> | null>(null);
   const resolveToolCallRef = useRef<((_v: boolean) => void) | null>(null);
@@ -173,6 +185,12 @@ export function ChatInput({
       });
     }
 
+    const selectedTextPrompt = buildSelectedText(pageData);
+    if (selectedTextPrompt) {
+      setMessages((prev) => [...prev, selectedTextPrompt]);
+      prompt.push({ ...selectedTextPrompt, role: 'user' });
+    }
+
     prompt.push(userMessage);
     setInput('');
     setIsStreaming(true);
@@ -200,6 +218,7 @@ export function ChatInput({
 
   return (
     <form onSubmit={handleSubmit}>
+      <SelectionBadge key={selectionPreview} selectedText={selectionPreview} />
       <div className="relative">
         <AnimatedGlowBorder
           isActive={isStreaming}

@@ -4,6 +4,7 @@ import type * as monaco from 'monaco-editor';
 declare global {
   interface Window {
     monaco?: typeof monaco;
+    __sidecarSelectionListenerAttached?: boolean;
     Diff?: {
       diffLines(
         _oldText: string,
@@ -66,6 +67,61 @@ function getEditorContentScript(): string {
     }
   } catch (e) {
     console.error('[Extension] Error getting editor content:', e);
+  }
+  return '';
+}
+
+function setupSelectionListenerScript(): void {
+  if (window.__sidecarSelectionListenerAttached) return;
+
+  const waitForEditor = () => {
+    const monacoInstance = window.monaco;
+    if (!monacoInstance?.editor) {
+      setTimeout(waitForEditor, 500);
+      return;
+    }
+    const editors = monacoInstance.editor.getEditors();
+    if (!editors.length) {
+      setTimeout(waitForEditor, 500);
+      return;
+    }
+
+    window.__sidecarSelectionListenerAttached = true;
+    const editor = editors[0];
+    editor.onDidChangeCursorSelection(() => {
+      const selection = editor.getSelection();
+      let selectedText = '';
+      if (selection && !selection.isEmpty()) {
+        const model = editor.getModel();
+        if (model) selectedText = model.getValueInRange(selection);
+      }
+      window.postMessage({ type: 'MONACO_SELECTION_CHANGED', selectedText }, '*');
+    });
+  };
+
+  waitForEditor();
+}
+
+function getEditorSelectionScript(): string {
+  try {
+    const monacoInstance = window.monaco;
+    if (monacoInstance && monacoInstance.editor) {
+      const editors = monacoInstance.editor.getEditors();
+      for (let i = 0; i < editors.length; i++) {
+        const editor = editors[i];
+        if (editor) {
+          const selection = editor.getSelection();
+          if (selection && !selection.isEmpty()) {
+            const model = editor.getModel();
+            if (model) {
+              return model.getValueInRange(selection);
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[Extension] Error getting editor selection:', e);
   }
   return '';
 }
@@ -175,6 +231,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .catch((error) => {
           console.error(error);
           sendResponse({ content: '' });
+        });
+      break;
+
+    case 'SETUP_SELECTION_LISTENER_FROM_CONTENT_SCRIPT':
+      chrome.scripting.executeScript({
+        target: { tabId },
+        func: setupSelectionListenerScript,
+        world: 'MAIN'
+      });
+      break;
+
+    case 'GET_EDITOR_SELECTION_FROM_CONTENT_SCRIPT':
+      chrome.scripting
+        .executeScript({
+          target: { tabId },
+          func: getEditorSelectionScript,
+          world: 'MAIN'
+        })
+        .then((result) => sendResponse({ selectedText: result[0].result }))
+        .catch((error) => {
+          console.error(error);
+          sendResponse({ selectedText: '' });
         });
       break;
 

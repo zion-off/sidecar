@@ -348,3 +348,16 @@ textarea {
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
+
+@keyframes selection-badge-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.selection-badge {
+  animation: selection-badge-in 120ms ease-out forwards;
+}
