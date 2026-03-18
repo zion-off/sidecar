@@ -1,6 +1,6 @@
 # Sidecar for Leetcode
 
-https://github.com/user-attachments/assets/aee1b2f3-3350-4043-b472-7b47f7f0085d
+https://github.com/user-attachments/assets/3aeed7e0-4326-488e-912a-488240163384
 
 Bring 400+ AI models to your Leetcode practice with a single OpenRouter API key. The extension can (with permission) read the problem you’re viewing and write back to your code editor—so you get targeted help without switching tabs. Perfect for learning efficiently and staying in flow on sites like LeetCode.
 
