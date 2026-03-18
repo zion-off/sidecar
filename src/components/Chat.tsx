@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import type { ChatProps } from '@/types/chat';
 import { Bubble } from '@/components/Bubble';
 import { ChatInput } from '@/components/ChatInput';
+import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ai-elements/reasoning';
 import { seedChat } from '@/utils/messaging';
 import { Suggestion } from './Suggestion';
 
@@ -24,9 +25,19 @@ export function Chat({
   return (
     <div className="flex h-full w-full max-w-full flex-col justify-between overflow-hidden p-4">
       <div ref={scrollRef} className="hide-scrollbar min-h-0 flex-1 overflow-y-auto bg-lc-bg-base">
-        {messages.map((msg, index) => (
-          <Bubble key={index} content={msg.content} role={msg.role} type={msg.type} />
-        ))}
+        {messages.map((msg, index) => {
+          if (msg.type === 'reasoning') {
+            const isLast = index === messages.length - 1;
+            const isReasoningStreaming = isLast && isStreaming && streamingMessage === '';
+            return (
+              <Reasoning key={index} isStreaming={isReasoningStreaming} className="mt-4">
+                <ReasoningTrigger />
+                <ReasoningContent>{msg.content}</ReasoningContent>
+              </Reasoning>
+            );
+          }
+          return <Bubble key={index} content={msg.content} role={msg.role} type={msg.type} />;
+        })}
         {isStreaming && streamingMessage.length > 0 && <Bubble content={streamingMessage} role="assistant" />}
       </div>
 

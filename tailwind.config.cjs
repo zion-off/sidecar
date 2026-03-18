@@ -66,7 +66,8 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)'
       },
       animation: {
-        'border-glow': 'border-glow 4s ease-in-out infinite'
+        'border-glow': 'border-glow 4s ease-in-out infinite',
+        shimmer: 'shimmer linear infinite'
       },
       keyframes: {
         'border-glow': {
@@ -76,6 +77,10 @@ module.exports = {
           '50%': {
             'background-position': '100% 50%'
           }
+        },
+        shimmer: {
+          '0%': { 'background-position': '100% center' },
+          '100%': { 'background-position': '0% center' }
         }
       },
       backgroundImage: {

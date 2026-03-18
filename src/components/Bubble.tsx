@@ -11,7 +11,7 @@ export const Bubble = memo(function Bubble({ content, role, type = 'content' }: 
   return (
     <div className={`flex text-sm ${role === 'user' ? 'justify-end' : 'justify-start'} mb-2`}>
       <div
-        className={`overflow-hidden rounded-lg px-2 py-1 ${role === 'user' ? 'bg-white/10 text-lc-text-body' : `${type === 'reasoning' ? 'text-neutral-500 dark:text-white/60' : 'text-lc-text-body'}`}`}
+        className={`overflow-hidden rounded-lg py-1 ${role === 'user' ? 'bg-white/10 px-2 text-lc-text-body' : `${type === 'reasoning' ? 'text-neutral-500 dark:text-white/60' : 'text-lc-text-body'}`}`}
       >
         <div
           className={`markdown-content ${role === 'assistant' ? 'dark' : ''}`}
