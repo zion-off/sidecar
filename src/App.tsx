@@ -87,17 +87,17 @@ function App() {
   return (
     <div className="flex h-full w-full max-w-full flex-col overflow-hidden bg-lc-bg-base">
       <Toaster />
-      <div className="flex h-9 items-center justify-between bg-lc-layer-one p-1 px-3">
+      <div className="flex h-9 items-center justify-between bg-lc-layer-one p-1 pl-3 pr-1">
         <span className="flex items-center gap-1">
           {HiMiniSparkles({ className: 'text-yellow-500' })}
           <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
         </span>
         <span
           onClick={() => setResetKey((prev) => prev + 1)}
-          className="-mr-2 flex aspect-square h-full cursor-pointer items-center justify-center rounded-md text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
+          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md p-[5px] text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
           title="Reset chat"
         >
-          {TbReload({ className: 'h-3 w-3' })}
+          {TbReload({ className: 'h-[14px] w-[14px]' })}
         </span>
       </div>
 
