@@ -1,5 +1,5 @@
 import { HiMiniSparkles } from 'react-icons/hi2';
-import { TbReload } from 'react-icons/tb';
+import { TbReload, TbLayoutSidebarRightCollapse } from 'react-icons/tb';
 import { Toaster } from 'sonner';
 import { useCallback, useEffect, useState } from 'react';
 import { InjectionStatus } from '@/types/editor';
@@ -92,13 +92,22 @@ function App() {
           {HiMiniSparkles({ className: 'text-yellow-500' })}
           <h2 className="text-[14px] font-[600] text-lc-primary">Sidecar</h2>
         </span>
-        <span
-          onClick={() => setResetKey((prev) => prev + 1)}
-          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md p-[5px] text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
-          title="Reset chat"
-        >
-          {TbReload({ className: 'h-[14px] w-[14px]' })}
-        </span>
+        <div className="flex items-center">
+          <span
+            onClick={() => setResetKey((prev) => prev + 1)}
+            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md p-[5px] text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
+            title="Reset chat"
+          >
+            {TbReload({ className: 'h-[14px] w-[14px]' })}
+          </span>
+          <span
+            onClick={() => postMessageToParent({ type: 'CLOSE_PANEL' })}
+            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md p-[5px] text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
+            title="Close panel"
+          >
+            {TbLayoutSidebarRightCollapse({ className: 'h-[14px] w-[14px]' })}
+          </span>
+        </div>
       </div>
 
       <Chat

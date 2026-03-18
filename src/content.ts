@@ -161,6 +161,10 @@ async function main() {
           isAccept
         });
         break;
+
+      case 'CLOSE_PANEL':
+        setToggleState(false);
+        break;
     }
   });
 

@@ -29,11 +29,11 @@
 }
 
 #extension-handlebar:hover:not(:has(#handlebar-highlight)) {
-  background-color: rgb(0, 132, 255);
+  background-color: rgba(150, 150, 150, 0.3);
 }
 
 #extension-handlebar:active:not(:has(#handlebar-highlight)) {
-  background-color: rgb(0, 132, 255);
+  background-color: rgba(150, 150, 150, 0.3);
 }
 
 .handlebar-svg {
