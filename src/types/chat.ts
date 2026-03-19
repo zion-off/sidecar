@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { ToolFunctionArgs } from '@/open-router/tools';
 import type { ReasoningEffort, Tool } from '@/types/open-router';
 

@@ -10,7 +10,7 @@ import { Shimmer } from './shimmer';
 interface ReasoningContextValue {
   isStreaming: boolean;
   isOpen: boolean;
-  setIsOpen: (_open: boolean) => void;
+  setIsOpen: (open: boolean) => void;
   duration: number | undefined;
 }
 
@@ -28,7 +28,7 @@ export type ReasoningProps = ComponentProps<typeof Collapsible> & {
   isStreaming?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
-  onOpenChange?: (_open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
   duration?: number;
 };
 
@@ -127,7 +127,7 @@ export const Reasoning = memo(
 );
 
 export type ReasoningTriggerProps = ComponentProps<typeof CollapsibleTrigger> & {
-  getThinkingMessage?: (_isStreaming: boolean, _duration?: number) => ReactNode;
+  getThinkingMessage?: (isStreaming: boolean, duration?: number) => ReactNode;
 };
 
 const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
