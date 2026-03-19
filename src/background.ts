@@ -11,8 +11,8 @@ declare global {
     __sidecarSelectionListenerAttached?: boolean;
     Diff?: {
       diffLines(
-        _oldText: string,
-        _newText: string
+        oldText: string,
+        newText: string
       ): Array<{
         value: string;
         added?: boolean;
@@ -20,7 +20,7 @@ declare global {
       }>;
     };
     myExtensionDecorations?: string[];
-    resolveSuggestion?: (_isAccept: boolean) => void;
+    resolveSuggestion?: (isAccept: boolean) => void;
   }
 }
 

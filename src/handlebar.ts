@@ -3,7 +3,7 @@ import { dragHandlebarSVG, openHandlebarSVG } from '@/assets/icons';
 const MIN_WIDTH = 350;
 const MAX_WIDTH = 800;
 
-function throttle<T extends unknown[]>(func: (..._args: T) => void, limit: number) {
+function throttle<T extends unknown[]>(func: (...args: T) => void, limit: number) {
   let inThrottle: boolean;
   return (...params: T) => {
     if (!inThrottle) {
