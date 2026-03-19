@@ -20,10 +20,11 @@ export function useChatStream(problemTitle: string) {
     throw new Error('useChatStream must be used within ConfigProvider');
   }
 
-  const { apiKey, modelResponse, config } = configContext;
+  const { apiKey, modelResponse, config, customInstructions } = configContext;
   const apiKeyRef = useRef(apiKey);
   const modelResponseRef = useRef(modelResponse);
   const configRef = useRef(config);
+  const customInstructionsRef = useRef(customInstructions);
   const [messages, setMessages] = useState<MessageType[]>(() => seedChat(problemTitle));
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -42,6 +43,10 @@ export function useChatStream(problemTitle: string) {
   useEffect(() => {
     configRef.current = config;
   }, [config]);
+
+  useEffect(() => {
+    customInstructionsRef.current = customInstructions;
+  }, [customInstructions]);
 
   useEffect(() => {
     setMessages(seedChat(problemTitle));
@@ -122,12 +127,16 @@ export function useChatStream(problemTitle: string) {
       const currentApiKey = apiKeyRef.current;
       const currentModelResponse = modelResponseRef.current;
       const currentConfig = configRef.current;
+      const currentCustomInstructions = customInstructionsRef.current;
 
       if (!trimmed || !currentApiKey || isStreaming || !currentModelResponse) return;
 
       const userMessage: MessageType = { content: trimmed, role: 'user' };
       const pageData = await getPageData();
-      const systemPrompt = buildSystemPrompt(pageData, { agentMode: currentConfig.mode === 'agent' });
+      const systemPrompt = buildSystemPrompt(pageData, {
+        agentMode: currentConfig.mode === 'agent',
+        customInstructions: currentCustomInstructions
+      });
       const editorContentPrompt = buildEditorContent(pageData);
       const selectedTextPrompt = buildSelectedText(pageData);
 
@@ -161,6 +170,7 @@ export function useChatStream(problemTitle: string) {
     (accepted: boolean) => {
       const currentModelResponse = modelResponseRef.current;
       const currentConfig = configRef.current;
+      const currentCustomInstructions = customInstructionsRef.current;
       if (!pendingToolCalls.current || !currentModelResponse) return;
 
       const toolCalls = pendingToolCalls.current;
@@ -186,7 +196,10 @@ export function useChatStream(problemTitle: string) {
         setStreamingMessage('');
 
         const pageData = await getPageData();
-        const systemPrompt = buildSystemPrompt(pageData, { agentMode: currentConfig.mode === 'agent' });
+        const systemPrompt = buildSystemPrompt(pageData, {
+          agentMode: currentConfig.mode === 'agent',
+          customInstructions: currentCustomInstructions
+        });
         const prompt = [systemPrompt, ...mapForPrompt(allMessages.slice(1))];
 
         const client = createClient();

@@ -13,6 +13,8 @@ type ConfigContextValue = {
   setModelResponse: StorageSetter<ModelEndpointsResponse | null>;
   config: ModelConfig;
   setConfig: StorageSetter<ModelConfig>;
+  customInstructions: string;
+  setCustomInstructions: StorageSetter<string>;
   isConfigLoading: boolean;
 };
 
@@ -40,6 +42,14 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     key: 'config',
     defaultValue: defaultConfig
   });
+  const {
+    value: customInstructions,
+    setValue: setCustomInstructions,
+    isLoading: isCustomInstructionsLoading
+  } = useStorageSetting<string>({
+    key: 'customInstructions',
+    defaultValue: ''
+  });
 
   const value = useMemo(
     () => ({
@@ -49,7 +59,10 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       setModelResponse,
       config,
       setConfig,
-      isConfigLoading: isApiKeyLoading || isModelLoading || isConfigValueLoading
+      customInstructions,
+      setCustomInstructions,
+      isConfigLoading:
+        isApiKeyLoading || isModelLoading || isConfigValueLoading || isCustomInstructionsLoading
     }),
     [
       apiKey,
@@ -58,9 +71,12 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       setModelResponse,
       config,
       setConfig,
+      customInstructions,
+      setCustomInstructions,
       isApiKeyLoading,
       isModelLoading,
-      isConfigValueLoading
+      isConfigValueLoading,
+      isCustomInstructionsLoading
     ]
   );
 

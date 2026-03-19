@@ -29,6 +29,7 @@ export default [
         HTMLIFrameElement: 'readonly',
         HTMLDivElement: 'readonly',
         HTMLInputElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
         Element: 'readonly',
         MutationObserver: 'readonly',
         Response: 'readonly',
