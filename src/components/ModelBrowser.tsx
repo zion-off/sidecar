@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RefreshCw, X } from 'lucide-react';
-import { toast } from 'sonner';
 import { getAllModels } from '@/open-router/model';
+import { toast } from 'sonner';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { OpenRouterModel } from '@/types/open-router';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Toggle } from '@/components/ui/toggle';
 
 interface ModelBrowserProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSelect: (model: OpenRouterModel) => void;
-  onClose: () => void;
   selectedModelId: string;
   recentModelIds: string[];
 }
@@ -69,7 +70,24 @@ function sortModels(models: OpenRouterModel[], sort: SortKey): OpenRouterModel[]
   return sorted;
 }
 
-export function ModelBrowser({ onSelect, onClose, selectedModelId, recentModelIds }: ModelBrowserProps) {
+function SkeletonRow() {
+  return (
+    <div className="px-3 py-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="h-3 w-36 animate-pulse rounded bg-white/[0.06]" />
+          <div className="h-2.5 w-48 animate-pulse rounded bg-white/[0.04]" />
+        </div>
+        <div className="shrink-0 space-y-1.5 text-right">
+          <div className="ml-auto h-2.5 w-10 animate-pulse rounded bg-white/[0.04]" />
+          <div className="ml-auto h-2.5 w-14 animate-pulse rounded bg-white/[0.04]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ModelBrowser({ open, onOpenChange, onSelect, selectedModelId, recentModelIds }: ModelBrowserProps) {
   const [models, setModels] = useState<OpenRouterModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,18 +96,13 @@ export function ModelBrowser({ onSelect, onClose, selectedModelId, recentModelId
   const [family, setFamily] = useState('all');
   const [filterTools, setFilterTools] = useState(false);
   const [filterReasoning, setFilterReasoning] = useState(false);
-  const cacheRef = useRef<OpenRouterModel[] | null>(null);
+  const [filterFree, setFilterFree] = useState(false);
 
-  const loadModels = useCallback(async (force = false) => {
-    if (!force && cacheRef.current) {
-      setModels(cacheRef.current);
-      return;
-    }
+  const loadModels = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await getAllModels();
-      cacheRef.current = response.data;
       setModels(response.data);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load models';
@@ -101,20 +114,10 @@ export function ModelBrowser({ onSelect, onClose, selectedModelId, recentModelId
   }, []);
 
   useEffect(() => {
-    void loadModels();
-  }, [loadModels]);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+    if (open) {
+      void loadModels();
+    }
+  }, [open, loadModels]);
 
   const families = useMemo(() => {
     return [...new Set(models.map(getTokenizer))].sort();
@@ -130,11 +133,12 @@ export function ModelBrowser({ onSelect, onClose, selectedModelId, recentModelId
       if (q && !`${m.name} ${m.id}`.toLowerCase().includes(q)) return false;
       if (filterTools && !m.supported_parameters.includes('tools')) return false;
       if (filterReasoning && !m.supported_parameters.includes('reasoning')) return false;
+      if (filterFree && Number(m.pricing.prompt) !== 0) return false;
       if (family !== 'all' && getTokenizer(m) !== family) return false;
       return true;
     });
     return sortModels(result, sort);
-  }, [search, models, sort, family, filterTools, filterReasoning]);
+  }, [search, models, sort, family, filterTools, filterReasoning, filterFree]);
 
   const recentModels = useMemo(() => {
     return recentModelIds.map((id) => modelIndex.get(id)).filter((m): m is OpenRouterModel => m !== undefined);
@@ -147,148 +151,154 @@ export function ModelBrowser({ onSelect, onClose, selectedModelId, recentModelId
   }, [family, families]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-lc-bg-base">
-      <div className="flex h-9 shrink-0 items-center justify-between bg-lc-layer-one px-3">
-        <span className="text-[14px] font-semibold text-lc-primary">Models</span>
-        <div className="flex items-center gap-0.5">
-          <button
-            type="button"
-            onClick={() => void loadModels(true)}
-            className="flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-300"
-            title="Refresh"
-          >
-            <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-300"
-            title="Close"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="text-lc-text-primary flex max-h-[80vh] max-w-[calc(100%-24px)] flex-col gap-0 overflow-hidden rounded-lg border-white/10 bg-lc-bg-base p-0 [&>button:last-child]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Models</DialogTitle>
+          <DialogDescription>Browse and select an OpenRouter model</DialogDescription>
+        </DialogHeader>
 
-      <div className="shrink-0 space-y-2 border-b border-white/5 px-3 py-2">
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search models..."
-          className="h-8 border-white/10 bg-lc-textarea-bg text-xs placeholder:text-xs focus-visible:ring-0"
-          autoFocus
-        />
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Select
-            value={sort}
-            onValueChange={(v) => {
-              if (isSortKey(v)) setSort(v);
-            }}
-          >
-            <SelectTrigger className="h-7 w-auto gap-1 border-white/10 bg-transparent px-2 text-xxs text-lc-text-secondary shadow-none focus:ring-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="border-white/10 bg-lc-bg-popover">
-              <SelectItem value="name" className="text-xxs">Name</SelectItem>
-              <SelectItem value="context_length" className="text-xxs">Context ↓</SelectItem>
-              <SelectItem value="prompt_price" className="text-xxs">Price ↑</SelectItem>
-              <SelectItem value="created" className="text-xxs">Newest</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={family} onValueChange={setFamily}>
-            <SelectTrigger className="h-7 w-auto max-w-[120px] gap-1 border-white/10 bg-transparent px-2 text-xxs text-lc-text-secondary shadow-none focus:ring-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="border-white/10 bg-lc-bg-popover">
-              <SelectItem value="all" className="text-xxs">All families</SelectItem>
-              {families.map((f) => (
-                <SelectItem key={f} value={f} className="text-xxs">{f}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex gap-1">
-            <Toggle
-              pressed={filterTools}
-              onPressedChange={setFilterTools}
-              size="sm"
-              className="h-7 border border-white/10 px-2 text-xxs text-lc-text-secondary data-[state=on]:bg-white/10 data-[state=on]:text-lc-text-body"
+        <div className="shrink-0 space-y-2 border-b border-white/5 px-2 pb-3 pt-3">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search models..."
+            className="h-8 border-white/10 bg-lc-textarea-bg text-xs placeholder:text-xs focus-visible:ring-0"
+          />
+          <div className="hide-scrollbar flex items-center gap-1.5 overflow-x-auto">
+            <Select
+              value={sort}
+              onValueChange={(v) => {
+                if (isSortKey(v)) setSort(v);
+              }}
             >
-              tools
-            </Toggle>
-            <Toggle
-              pressed={filterReasoning}
-              onPressedChange={setFilterReasoning}
-              size="sm"
-              className="h-7 border border-white/10 px-2 text-xxs text-lc-text-secondary data-[state=on]:bg-white/10 data-[state=on]:text-lc-text-body"
-            >
-              reasoning
-            </Toggle>
-          </div>
-        </div>
-      </div>
-
-      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto">
-        {isLoading && models.length === 0 ? (
-          <div className="px-3 py-8 text-center">
-            <p className="animate-pulse text-xs text-lc-text-secondary">Loading models...</p>
-          </div>
-        ) : error && models.length === 0 ? (
-          <div className="px-3 py-8 text-center">
-            <p className="mb-2 text-xs text-lc-text-secondary">{error}</p>
-            <button
-              type="button"
-              onClick={() => void loadModels(true)}
-              className="text-xxs text-blue-400 hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        ) : (
-          <>
-            {recentModels.length > 0 && !search.trim() && (
-              <section className="border-b border-white/5">
-                <div className="px-3 pb-1 pt-2">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-lc-text-secondary">
-                    Recent
-                  </span>
-                </div>
-                {recentModels.map((model) => (
-                  <ModelRow
-                    key={`recent-${model.id}`}
-                    model={model}
-                    isSelected={model.id === selectedModelId}
-                    onSelect={onSelect}
-                  />
+              <SelectTrigger className="h-7 w-auto gap-1 border-white/10 bg-transparent px-2 text-xxs text-lc-text-secondary shadow-none focus:ring-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-lc-bg-popover">
+                <SelectItem value="name" className="text-xxs">
+                  Name
+                </SelectItem>
+                <SelectItem value="context_length" className="text-xxs">
+                  Context ↓
+                </SelectItem>
+                <SelectItem value="prompt_price" className="text-xxs">
+                  Price ↑
+                </SelectItem>
+                <SelectItem value="created" className="text-xxs">
+                  Newest
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={family} onValueChange={setFamily}>
+              <SelectTrigger className="h-7 w-auto max-w-[120px] gap-1 border-white/10 bg-transparent px-2 text-xxs text-lc-text-secondary shadow-none focus:ring-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-lc-bg-popover">
+                <SelectItem value="all" className="text-xxs">
+                  All families
+                </SelectItem>
+                {families.map((f) => (
+                  <SelectItem key={f} value={f} className="text-xxs">
+                    {f}
+                  </SelectItem>
                 ))}
-              </section>
-            )}
+              </SelectContent>
+            </Select>
+            <div className="flex shrink-0 gap-1">
+              <Toggle
+                pressed={filterTools}
+                onPressedChange={setFilterTools}
+                size="sm"
+                className="h-7 border border-white/10 px-2 text-xxs text-lc-text-secondary data-[state=on]:bg-white/10 data-[state=on]:text-lc-text-body"
+              >
+                tools
+              </Toggle>
+              <Toggle
+                pressed={filterReasoning}
+                onPressedChange={setFilterReasoning}
+                size="sm"
+                className="h-7 border border-white/10 px-2 text-xxs text-lc-text-secondary data-[state=on]:bg-white/10 data-[state=on]:text-lc-text-body"
+              >
+                reasoning
+              </Toggle>
+              <Toggle
+                pressed={filterFree}
+                onPressedChange={setFilterFree}
+                size="sm"
+                className="h-7 border border-white/10 px-2 text-xxs text-lc-text-secondary data-[state=on]:bg-white/10 data-[state=on]:text-lc-text-body"
+              >
+                free
+              </Toggle>
+            </div>
+          </div>
+        </div>
 
-            <section>
-              <div className="flex items-center justify-between px-3 pb-1 pt-2">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-lc-text-secondary">
-                  All models
-                </span>
-                <span className="text-[10px] tabular-nums text-lc-text-secondary">{filtered.length}</span>
-              </div>
-              {filtered.length === 0 ? (
-                <div className="px-3 py-6 text-center text-xxs text-lc-text-secondary">
-                  No models match your filters
-                </div>
-              ) : (
-                filtered.map((model) => (
-                  <ModelRow
-                    key={model.id}
-                    model={model}
-                    isSelected={model.id === selectedModelId}
-                    onSelect={onSelect}
-                  />
-                ))
+        <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="space-y-px">
+              {Array.from({ length: 8 }, (_, i) => (
+                <SkeletonRow key={i} />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="px-4 py-8 text-center">
+              <p className="mb-2 text-xs text-lc-text-secondary">{error}</p>
+              <button
+                type="button"
+                onClick={() => void loadModels()}
+                className="text-xxs text-blue-400 hover:underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              {recentModels.length > 0 && !search.trim() && (
+                <section className="border-b border-white/5">
+                  <div className="px-3 pb-1 pt-2">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-lc-text-secondary">
+                      Recent
+                    </span>
+                  </div>
+                  {recentModels.map((model) => (
+                    <ModelRow
+                      key={`recent-${model.id}`}
+                      model={model}
+                      isSelected={model.id === selectedModelId}
+                      onSelect={onSelect}
+                    />
+                  ))}
+                </section>
               )}
-            </section>
-          </>
-        )}
-      </div>
-    </div>
+
+              <section>
+                <div className="flex items-center justify-between px-3 pb-1 pt-2">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-lc-text-secondary">
+                    All models
+                  </span>
+                  <span className="text-[10px] tabular-nums text-lc-text-secondary">{filtered.length}</span>
+                </div>
+                {filtered.length === 0 ? (
+                  <div className="px-3 py-6 text-center text-xxs text-lc-text-secondary">
+                    No models match your filters
+                  </div>
+                ) : (
+                  filtered.map((model) => (
+                    <ModelRow
+                      key={model.id}
+                      model={model}
+                      isSelected={model.id === selectedModelId}
+                      onSelect={onSelect}
+                    />
+                  ))
+                )}
+              </section>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
