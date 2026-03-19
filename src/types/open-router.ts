@@ -1,28 +1,21 @@
 export type ModelEndpointPricing = {
-  request: string;
-  image: string;
   prompt: string;
   completion: string;
+  request?: string;
+  image?: string;
 };
 
 export type ModelEndpoint = {
-  name: string;
-  context_length: number;
-  pricing: ModelEndpointPricing;
-  provider_name: string;
   supported_parameters: string[];
-  quantization: string;
-  max_completion_tokens: number;
-  max_prompt_tokens: number;
-  status: string;
-  uptime_last_30m: number;
+  context_length?: number | null;
+  pricing?: ModelEndpointPricing;
 };
 
 export type ModelArchitecture = {
-  input_modalities: string[];
-  output_modalities: string[];
   tokenizer: string;
-  instruct_type: string;
+  input_modalities?: string[];
+  output_modalities?: string[];
+  instruct_type?: string;
 };
 
 export type ModelData = {
@@ -36,6 +29,31 @@ export type ModelData = {
 
 export type ModelEndpointsResponse = {
   data: ModelData;
+};
+
+export type OpenRouterModelPricing = {
+  prompt: string;
+  completion: string;
+};
+
+export type OpenRouterModelTopProvider = {
+  context_length: number | null;
+};
+
+export type OpenRouterModel = {
+  id: string;
+  name: string;
+  description: string;
+  context_length: number | null;
+  created: number;
+  pricing: OpenRouterModelPricing;
+  supported_parameters: string[];
+  architecture: ModelArchitecture;
+  top_provider: OpenRouterModelTopProvider;
+};
+
+export type OpenRouterModelsResponse = {
+  data: OpenRouterModel[];
 };
 
 export type ReasoningEffort = '' | 'low' | 'medium' | 'high';
