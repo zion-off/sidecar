@@ -152,7 +152,7 @@ export function ModelBrowser({ open, onOpenChange, onSelect, selectedModelId, re
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="text-lc-text-primary flex max-h-[80vh] max-w-[calc(100%-24px)] flex-col gap-0 overflow-hidden rounded-lg border-white/10 bg-lc-bg-base p-0 [&>button:last-child]:hidden">
+      <DialogContent className="text-lc-text-primary flex h-[70dvh] max-w-[calc(100%-24px)] flex-col gap-0 overflow-hidden rounded-lg border-white/10 bg-lc-bg-base p-0 [&>button:last-child]:hidden">
         <DialogHeader className="sr-only">
           <DialogTitle>Models</DialogTitle>
           <DialogDescription>Browse and select an OpenRouter model</DialogDescription>
