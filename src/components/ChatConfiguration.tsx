@@ -1,14 +1,17 @@
+import { useConfigContext } from '@/context/ConfigContext';
 import { useRecentModels } from '@/hooks/useRecentModels';
 import { toast } from 'sonner';
 import { useCallback, useRef, useState } from 'react';
 import type { ModelConfig, ModelEndpointsResponse, OpenRouterModel } from '@/types/open-router';
-import { useConfigContext } from '@/context/ConfigContext';
 import { ModelBrowser } from '@/components/ModelBrowser';
-import { PopoverHeader } from '@/components/PopoverHeader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Check, CircleHelp, X } from 'lucide-react';
 
 function buildModelResponse(model: OpenRouterModel): ModelEndpointsResponse {
   return {
@@ -38,12 +41,23 @@ function buildModelResponse(model: OpenRouterModel): ModelEndpointsResponse {
 }
 
 export function ChatConfiguration() {
-  const { apiKey, setApiKey, modelResponse, setModelResponse, config, setConfig } = useConfigContext();
+  const {
+    apiKey,
+    setApiKey,
+    modelResponse,
+    setModelResponse,
+    config,
+    setConfig,
+    customInstructions,
+    setCustomInstructions
+  } = useConfigContext();
   const { recentModelIds, pushRecentModel } = useRecentModels();
 
   const [isOpen, setIsOpen] = useState(false);
   const [localApiKey, setLocalApiKey] = useState('');
   const [isBrowsing, setIsBrowsing] = useState(false);
+  const [isCustomInstructionsOpen, setIsCustomInstructionsOpen] = useState(false);
+  const [localCustomInstructions, setLocalCustomInstructions] = useState('');
 
   const configRef = useRef(config);
   configRef.current = config;
@@ -86,7 +100,23 @@ export function ChatConfiguration() {
     setIsOpen(open);
   };
 
+  const openCustomInstructions = () => {
+    setIsOpen(false);
+    setLocalCustomInstructions(customInstructions);
+    setIsCustomInstructionsOpen(true);
+  };
+
+  const saveCustomInstructions = () => {
+    void setCustomInstructions(localCustomInstructions);
+    setIsCustomInstructionsOpen(false);
+  };
+
+  const cancelCustomInstructions = () => {
+    setIsCustomInstructionsOpen(false);
+  };
+
   const displayName = modelResponse?.data.id.split('/')[1]?.slice(0, 40) || 'No model selected';
+  const customInstructionsPreview = customInstructions.trim().replace(/\s+/g, ' ');
 
   return (
     <>
@@ -96,11 +126,29 @@ export function ChatConfiguration() {
         </PopoverTrigger>
         <PopoverContent className="text-lc-text-primary border-none bg-lc-bg-popover text-xs">
           <div className="grid gap-4">
-            <PopoverHeader />
             <div className="grid gap-2">
               <div className="grid grid-cols-3 items-center gap-4">
-                <Label htmlFor="apiKey" className="text-xs">
+                <Label htmlFor="apiKey" className="flex items-center gap-1 text-xs">
                   API Key
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CircleHelp className="h-3 w-3 text-lc-text-secondary" />
+                    </TooltipTrigger>
+                    <TooltipContent className="border border-white/10 bg-lc-bg-base text-xs text-lc-text-secondary">
+                      <p>
+                        Get your OpenRouter API key{' '}
+                        <a
+                          href="https://openrouter.ai"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 underline"
+                        >
+                          here
+                        </a>
+                        .
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </Label>
                 <Input
                   type="password"
@@ -124,6 +172,16 @@ export function ChatConfiguration() {
                 </button>
               </div>
               <ReasoningEffort />
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label className="text-xs">Instructions</Label>
+                <button
+                  type="button"
+                  onClick={openCustomInstructions}
+                  className="col-span-2 h-8 truncate rounded-md border border-white/10 px-2 text-center text-xs text-lc-text-secondary transition-colors hover:bg-white/[0.04]"
+                >
+                  {customInstructionsPreview || 'Custom instructions'}
+                </button>
+              </div>
             </div>
           </div>
         </PopoverContent>
@@ -136,6 +194,31 @@ export function ChatConfiguration() {
         selectedModelId={modelResponse?.data.id || ''}
         recentModelIds={recentModelIds}
       />
+
+      <Dialog open={isCustomInstructionsOpen} onOpenChange={() => cancelCustomInstructions()}>
+        <DialogContent className="flex h-[50dvh] max-w-[calc(100%-24px)] flex-col gap-0 overflow-hidden rounded-lg border-white/10 bg-lc-bg-base p-0 text-lc-text-primary [&>button:last-child]:hidden">
+          <DialogHeader className="flex shrink-0 flex-row items-center justify-between border-b border-white/5 px-4 py-3">
+            <div>
+              <DialogTitle className="text-xs font-medium text-lc-text-body">Custom Instructions</DialogTitle>
+              <DialogDescription className="sr-only">Add custom instructions for the AI</DialogDescription>
+            </div>
+            <div className="flex gap-1">
+              <button type="button" onClick={cancelCustomInstructions} className="rounded p-1 text-lc-text-secondary transition-colors hover:bg-white/[0.06]">
+                <X className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={saveCustomInstructions} className="rounded p-1 text-green-400 transition-colors hover:bg-white/[0.06]">
+                <Check className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </DialogHeader>
+          <Textarea
+            value={localCustomInstructions}
+            onChange={(e) => setLocalCustomInstructions(e.target.value)}
+            placeholder="Add custom instructions..."
+            className="min-h-0 flex-1 resize-none rounded-none border-none bg-transparent px-4 py-3 text-xs text-lc-text-body placeholder:text-lc-text-secondary focus-visible:ring-0"
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
