@@ -21,12 +21,27 @@ export function useChatStream(problemTitle: string) {
   }
 
   const { apiKey, modelResponse, config } = configContext;
+  const apiKeyRef = useRef(apiKey);
+  const modelResponseRef = useRef(modelResponse);
+  const configRef = useRef(config);
   const [messages, setMessages] = useState<MessageType[]>(() => seedChat(problemTitle));
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const [hasPendingToolCall, setHasPendingToolCall] = useState(false);
   const pendingToolCalls = useRef<ToolCallInfo[] | null>(null);
   const currentEditorContent = useRef<MessageType | null>(null);
+
+  useEffect(() => {
+    apiKeyRef.current = apiKey;
+  }, [apiKey]);
+
+  useEffect(() => {
+    modelResponseRef.current = modelResponse;
+  }, [modelResponse]);
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
 
   useEffect(() => {
     setMessages(seedChat(problemTitle));
@@ -49,7 +64,7 @@ export function useChatStream(problemTitle: string) {
 
   const createClient = useCallback(() => {
     return new ChatCompletion({
-      apiKey,
+      apiKey: apiKeyRef.current,
       onChunk: (_, fullMessage) => {
         setStreamingMessage(fullMessage);
       },
@@ -99,16 +114,20 @@ export function useChatStream(problemTitle: string) {
         });
       }
     });
-  }, [apiKey]);
+  }, []);
 
   const sendMessage = useCallback(
     async (input: string) => {
       const trimmed = input.trim();
-      if (!trimmed || !apiKey || isStreaming || !modelResponse) return;
+      const currentApiKey = apiKeyRef.current;
+      const currentModelResponse = modelResponseRef.current;
+      const currentConfig = configRef.current;
+
+      if (!trimmed || !currentApiKey || isStreaming || !currentModelResponse) return;
 
       const userMessage: MessageType = { content: trimmed, role: 'user' };
       const pageData = await getPageData();
-      const systemPrompt = buildSystemPrompt(pageData, { agentMode: config.mode === 'agent' });
+      const systemPrompt = buildSystemPrompt(pageData, { agentMode: currentConfig.mode === 'agent' });
       const editorContentPrompt = buildEditorContent(pageData);
       const selectedTextPrompt = buildSelectedText(pageData);
 
@@ -128,52 +147,58 @@ export function useChatStream(problemTitle: string) {
 
       const prompt = [systemPrompt, ...mapForPrompt(allMessages.slice(1))];
       const client = createClient();
-
       await client.processStream(
-        modelResponse.data.id,
-        config.reasoning,
+        currentModelResponse.data.id,
+        currentConfig.reasoning,
         prompt,
-        config.mode === 'agent' ? defaultTools : undefined
+        currentConfig.mode === 'agent' ? defaultTools : undefined
       );
     },
-    [apiKey, config.mode, config.reasoning, createClient, isStreaming, messages, modelResponse]
+    [createClient, isStreaming, messages]
   );
 
   const resolveToolCall = useCallback(
-    async (accepted: boolean) => {
-      if (!pendingToolCalls.current || !modelResponse) return;
+    (accepted: boolean) => {
+      const currentModelResponse = modelResponseRef.current;
+      const currentConfig = configRef.current;
+      if (!pendingToolCalls.current || !currentModelResponse) return;
 
-      postMessageToParent({ type: MSG.RESOLVE_SUGGESTION, isAccept: accepted });
-      setHasPendingToolCall(false);
+      const toolCalls = pendingToolCalls.current;
+      const messagesSnapshot = messages;
 
-      const toolResultMessages: MessageType[] = pendingToolCalls.current.map((tc) => ({
-        content: accepted
-          ? 'The user accepted the suggestion. It has been applied to the editor.'
-          : 'The user rejected the suggestion. It has been reverted.',
-        role: 'tool',
-        tool_call_id: tc.id
-      }));
+      void (async () => {
+        postMessageToParent({ type: MSG.RESOLVE_SUGGESTION, isAccept: accepted });
+        setHasPendingToolCall(false);
 
-      const allMessages = [...messages, ...toolResultMessages];
-      setMessages(allMessages);
+        const toolResultMessages: MessageType[] = toolCalls.map((tc) => ({
+          content: accepted
+            ? 'The user accepted the suggestion. It has been applied to the editor.'
+            : 'The user rejected the suggestion. It has been reverted.',
+          role: 'tool',
+          tool_call_id: tc.id
+        }));
 
-      pendingToolCalls.current = null;
-      setIsStreaming(true);
-      setStreamingMessage('');
+        const allMessages = [...messagesSnapshot, ...toolResultMessages];
+        setMessages(allMessages);
 
-      const pageData = await getPageData();
-      const systemPrompt = buildSystemPrompt(pageData, { agentMode: config.mode === 'agent' });
-      const prompt = [systemPrompt, ...mapForPrompt(allMessages.slice(1))];
+        pendingToolCalls.current = null;
+        setIsStreaming(true);
+        setStreamingMessage('');
 
-      const client = createClient();
-      await client.processStream(
-        modelResponse.data.id,
-        config.reasoning,
-        prompt,
-        config.mode === 'agent' ? defaultTools : undefined
-      );
+        const pageData = await getPageData();
+        const systemPrompt = buildSystemPrompt(pageData, { agentMode: currentConfig.mode === 'agent' });
+        const prompt = [systemPrompt, ...mapForPrompt(allMessages.slice(1))];
+
+        const client = createClient();
+        await client.processStream(
+          currentModelResponse.data.id,
+          currentConfig.reasoning,
+          prompt,
+          currentConfig.mode === 'agent' ? defaultTools : undefined
+        );
+      })();
     },
-    [config.mode, config.reasoning, createClient, messages, modelResponse]
+    [createClient, messages]
   );
 
   const resetChat = useCallback(() => {
