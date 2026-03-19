@@ -1,5 +1,7 @@
 import type * as monaco from 'monaco-editor';
 
+const MSG = __SIDECAR_MSG__;
+
 // Extend window interface for Monaco and other globals
 declare global {
   interface Window {
@@ -71,7 +73,7 @@ function getEditorContentScript(): string {
   return '';
 }
 
-function setupSelectionListenerScript(): void {
+function setupSelectionListenerScript(monacoSelectionChangedType: string): void {
   if (window.__sidecarSelectionListenerAttached) return;
 
   const waitForEditor = () => {
@@ -95,7 +97,7 @@ function setupSelectionListenerScript(): void {
         const model = editor.getModel();
         if (model) selectedText = model.getValueInRange(selection);
       }
-      window.postMessage({ type: 'MONACO_SELECTION_CHANGED', selectedText }, '*');
+      window.postMessage({ type: monacoSelectionChangedType, selectedText }, '*');
     });
   };
 
@@ -126,7 +128,10 @@ function getEditorSelectionScript(): string {
   return '';
 }
 
-function showSuggestionScript(suggestion: { originalCode: string; suggestedCode: string }): void {
+function showSuggestionScript(
+  suggestion: { originalCode: string; suggestedCode: string },
+  suggestionResolvedType: string
+): void {
   try {
     const monacoInstance = window.monaco;
     if (!monacoInstance) return;
@@ -185,7 +190,7 @@ function showSuggestionScript(suggestion: { originalCode: string; suggestedCode:
       } catch (err) {
         console.error('[Extension] diff cleanup error', err);
       }
-      window.postMessage({ type: 'SUGGESTION_RESOLVED_FROM_PAGE' }, '*');
+      window.postMessage({ type: suggestionResolvedType }, '*');
     }
 
     // Expose for background-triggered accept/reject via resolveSuggestionScript
@@ -208,7 +213,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const { type, code, suggestion, isAccept } = message;
 
   switch (type) {
-    case 'INJECT_CODE_FROM_CONTENT_SCRIPT':
+    case MSG.INJECT_CODE_FROM_CONTENT_SCRIPT:
       chrome.scripting
         .executeScript({
           target: { tabId },
@@ -220,7 +225,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .catch((error) => console.error(error));
       break;
 
-    case 'GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT':
+    case MSG.GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT:
       chrome.scripting
         .executeScript({
           target: { tabId },
@@ -234,15 +239,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       break;
 
-    case 'SETUP_SELECTION_LISTENER_FROM_CONTENT_SCRIPT':
+    case MSG.SETUP_SELECTION_LISTENER_FROM_CONTENT_SCRIPT:
       chrome.scripting.executeScript({
         target: { tabId },
         func: setupSelectionListenerScript,
+        args: [MSG.MONACO_SELECTION_CHANGED],
         world: 'MAIN'
       });
       break;
 
-    case 'GET_EDITOR_SELECTION_FROM_CONTENT_SCRIPT':
+    case MSG.GET_EDITOR_SELECTION_FROM_CONTENT_SCRIPT:
       chrome.scripting
         .executeScript({
           target: { tabId },
@@ -256,16 +262,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       break;
 
-    case 'SHOW_SUGGESTION_FROM_CONTENT_SCRIPT':
+    case MSG.SHOW_SUGGESTION_FROM_CONTENT_SCRIPT:
       chrome.scripting.executeScript({
         target: { tabId },
         func: showSuggestionScript,
-        args: [suggestion],
+        args: [suggestion, MSG.SUGGESTION_RESOLVED_FROM_PAGE],
         world: 'MAIN'
       });
       break;
 
-    case 'RESOLVE_SUGGESTION_FROM_CONTENT_SCRIPT':
+    case MSG.RESOLVE_SUGGESTION_FROM_CONTENT_SCRIPT:
       chrome.scripting.executeScript({
         target: { tabId },
         func: resolveSuggestionScript,

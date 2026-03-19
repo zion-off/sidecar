@@ -1,5 +1,7 @@
 import { dragHandlebarSVG, openHandlebarSVG } from '@/assets/icons';
 
+const MSG = __SIDECAR_MSG__;
+
 // Individual data fetching functions
 export function getProblemTitle(): string {
   const problemTitleElement =
@@ -57,7 +59,7 @@ export function getEditorContent(): string {
 
 export async function getEditorContentAsync(): Promise<string> {
   return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ type: 'GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT' }, (response) => {
+    chrome.runtime.sendMessage({ type: MSG.GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT }, (response) => {
       if (chrome.runtime.lastError) {
         console.error('Error getting editor content from background:', chrome.runtime.lastError);
         // Fallback to DOM method
@@ -77,7 +79,7 @@ export async function getEditorContentAsync(): Promise<string> {
 
 export async function getEditorSelectionAsync(): Promise<string> {
   return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ type: 'GET_EDITOR_SELECTION_FROM_CONTENT_SCRIPT' }, (response) => {
+    chrome.runtime.sendMessage({ type: MSG.GET_EDITOR_SELECTION_FROM_CONTENT_SCRIPT }, (response) => {
       if (chrome.runtime.lastError) {
         console.error('Error getting editor selection from background:', chrome.runtime.lastError);
         resolve('');
@@ -99,7 +101,7 @@ async function main() {
       const problemTitle = getProblemTitle();
       appIframe.contentWindow.postMessage(
         {
-          type: 'PROBLEM_TITLE_UPDATE',
+          type: MSG.PROBLEM_TITLE_UPDATE,
           data: {
             title: problemTitle,
             timestamp: Date.now()
@@ -116,11 +118,11 @@ async function main() {
     const { type, code, highlights, suggestion, isAccept } = event.data;
 
     switch (type) {
-      case 'REQUEST_PROBLEM_TITLE':
+      case MSG.REQUEST_PROBLEM_TITLE:
         sendProblemTitleToApp();
         break;
 
-      case 'GET_PROBLEM_DATA':
+      case MSG.GET_PROBLEM_DATA:
         // Send all problem data when requested
         (async () => {
           const [editorContent, selectedText] = await Promise.all([
@@ -129,7 +131,7 @@ async function main() {
           ]);
           appIframe.contentWindow?.postMessage(
             {
-              type: 'PROBLEM_DATA_RESPONSE',
+              type: MSG.PROBLEM_DATA_RESPONSE,
               data: {
                 title: getProblemTitle(),
                 description: getProblemDescription(),
@@ -144,12 +146,12 @@ async function main() {
         })();
         break;
 
-      case 'INJECT_CODE':
-        chrome.runtime.sendMessage({ type: 'INJECT_CODE_FROM_CONTENT_SCRIPT', code }, (response) => {
+      case MSG.INJECT_CODE:
+        chrome.runtime.sendMessage({ type: MSG.INJECT_CODE_FROM_CONTENT_SCRIPT, code }, (response) => {
           if (chrome.runtime.lastError) console.error(chrome.runtime.lastError);
           appIframe.contentWindow?.postMessage(
             {
-              type: 'INJECTION_RESULT',
+              type: MSG.INJECTION_RESULT,
               success: response?.success,
               message: response?.success ? 'Code injected successfully!' : 'Failed to inject code'
             },
@@ -158,28 +160,28 @@ async function main() {
         });
         break;
 
-      case 'HIGHLIGHT_LINES':
+      case MSG.HIGHLIGHT_LINES:
         chrome.runtime.sendMessage({
-          type: 'HIGHLIGHT_LINES_FROM_CONTENT_SCRIPT',
+          type: MSG.HIGHLIGHT_LINES_FROM_CONTENT_SCRIPT,
           highlights
         });
         break;
 
-      case 'SHOW_SUGGESTION':
+      case MSG.SHOW_SUGGESTION:
         chrome.runtime.sendMessage({
-          type: 'SHOW_SUGGESTION_FROM_CONTENT_SCRIPT',
+          type: MSG.SHOW_SUGGESTION_FROM_CONTENT_SCRIPT,
           suggestion
         });
         break;
 
-      case 'RESOLVE_SUGGESTION':
+      case MSG.RESOLVE_SUGGESTION:
         chrome.runtime.sendMessage({
-          type: 'RESOLVE_SUGGESTION_FROM_CONTENT_SCRIPT',
+          type: MSG.RESOLVE_SUGGESTION_FROM_CONTENT_SCRIPT,
           isAccept
         });
         break;
 
-      case 'CLOSE_PANEL':
+      case MSG.CLOSE_PANEL:
         setToggleState(false);
         break;
     }
@@ -190,11 +192,11 @@ async function main() {
     (event) => {
       if (event.source !== window) return;
 
-      if (event.data.type === 'SUGGESTION_RESOLVED_FROM_PAGE') {
-        appIframe.contentWindow?.postMessage({ type: 'SUGGESTION_RESOLVED' }, '*');
-      } else if (event.data.type === 'MONACO_SELECTION_CHANGED') {
+      if (event.data.type === MSG.SUGGESTION_RESOLVED_FROM_PAGE) {
+        appIframe.contentWindow?.postMessage({ type: MSG.SUGGESTION_RESOLVED }, '*');
+      } else if (event.data.type === MSG.MONACO_SELECTION_CHANGED) {
         appIframe.contentWindow?.postMessage(
-          { type: 'SELECTION_CHANGED', selectedText: event.data.selectedText },
+          { type: MSG.SELECTION_CHANGED, selectedText: event.data.selectedText },
           '*'
         );
       }
@@ -372,7 +374,7 @@ async function main() {
   appIframe.addEventListener('load', () => {
     // Small delay to ensure React app is mounted
     setTimeout(sendTitleWhenReady, 100);
-    chrome.runtime.sendMessage({ type: 'SETUP_SELECTION_LISTENER_FROM_CONTENT_SCRIPT' });
+    chrome.runtime.sendMessage({ type: MSG.SETUP_SELECTION_LISTENER_FROM_CONTENT_SCRIPT });
   });
 
   // Fallback: try sending after a longer delay in case load event doesn't fire

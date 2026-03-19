@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { ToolFunctionArgs } from '@/open-router/tools';
-import { InjectionStatus } from '@/types/editor';
 import type { ReasoningEffort, Tool } from '@/types/open-router';
 
 export type ToolCallInfo = {
@@ -47,8 +46,6 @@ export type StreamChatCompletionBody = {
 export type ChatProps = {
   problemTitle: string;
   activeSuggestion: boolean;
-  injectionStatus: InjectionStatus;
-  sendCodeToEditor: (code: string) => void;
   showSuggestions: (suggestedCode?: string) => void;
   resolveSuggestion: (isAccept: boolean) => void;
 };
