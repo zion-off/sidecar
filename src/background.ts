@@ -1,5 +1,5 @@
 import type * as monaco from 'monaco-editor';
-import { getEditorContentScript, getEditorSelectionScript, injectionScript } from '@/monaco/editor';
+import { getEditorContentScript, getEditorSelectionScript } from '@/monaco/editor';
 import { setupSelectionListenerScript } from '@/monaco/selection';
 import { resolveSuggestionScript, showSuggestionScript } from '@/monaco/suggestion';
 
@@ -28,21 +28,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const tabId = sender.tab?.id;
   if (!tabId) return true;
 
-  const { type, code, suggestion, isAccept } = message;
+  const { type, suggestion, isAccept } = message;
 
   switch (type) {
-    case MSG.INJECT_CODE_FROM_CONTENT_SCRIPT:
-      chrome.scripting
-        .executeScript({
-          target: { tabId },
-          func: injectionScript,
-          args: [code],
-          world: 'MAIN'
-        })
-        .then((injectionResult) => sendResponse({ success: injectionResult[0].result }))
-        .catch((error) => console.error(error));
-      break;
-
     case MSG.GET_EDITOR_CONTENT_FROM_CONTENT_SCRIPT:
       chrome.scripting
         .executeScript({
