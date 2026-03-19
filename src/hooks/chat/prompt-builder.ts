@@ -72,7 +72,6 @@ export async function getPageData(): Promise<PageData> {
   return new Promise((resolve) => {
     window.parent.postMessage({ type: MSG.GET_PROBLEM_DATA }, '*');
 
-    // Listen for the response
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === MSG.PROBLEM_DATA_RESPONSE) {
         window.removeEventListener('message', handleMessage);

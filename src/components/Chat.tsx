@@ -1,36 +1,14 @@
 import { useAutoSmoothScroll } from '@/hooks/useAutoSmoothScroll';
-import { useCallback, useRef, useState } from 'react';
-import type { ChatProps } from '@/types/chat';
+import { useRef } from 'react';
+import { useChatContext } from '@/context/ChatContext';
 import { Bubble } from '@/components/Bubble';
 import { ChatInput } from '@/components/ChatInput';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ai-elements/reasoning';
-import { seedChat } from '@/utils/messaging';
 import { Suggestion } from './Suggestion';
 
-export function Chat({
-  problemTitle,
-  showSuggestions,
-  resolveSuggestion
-}: ChatProps) {
-  const [messages, setMessages] = useState(seedChat(problemTitle));
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
+export function Chat() {
+  const { messages, isStreaming, streamingMessage, hasPendingToolCall, resolveToolCall } = useChatContext();
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [hasPendingToolCall, setHasPendingToolCall] = useState(false);
-  const toolCallResolverRef = useRef<((_v: boolean) => void) | null>(null);
-
-  const handleResolveSuggestion = useCallback(
-    (isAccept: boolean) => {
-      resolveSuggestion(isAccept);
-      toolCallResolverRef.current?.(isAccept);
-    },
-    [resolveSuggestion]
-  );
-
-  const handleToolCallResolverReady = useCallback((resolver: ((_v: boolean) => void) | null) => {
-    toolCallResolverRef.current = resolver;
-    setHasPendingToolCall(resolver !== null);
-  }, []);
 
   useAutoSmoothScroll(scrollRef, [messages.length, streamingMessage], true, { bottomThreshold: 96 });
 
@@ -54,16 +32,8 @@ export function Chat({
       </div>
 
       <div className="flex-shrink-0">
-        <Suggestion activeSuggestion={hasPendingToolCall} resolveSuggestion={handleResolveSuggestion} />
-        <ChatInput
-          isStreaming={isStreaming}
-          setIsStreaming={setIsStreaming}
-          setStreamingMessage={setStreamingMessage}
-          messages={messages}
-          setMessages={setMessages}
-          showSuggestions={showSuggestions}
-          onToolCallResolverReady={handleToolCallResolverReady}
-        />
+        <Suggestion activeSuggestion={hasPendingToolCall} resolveSuggestion={resolveToolCall} />
+        <ChatInput />
       </div>
     </div>
   );
