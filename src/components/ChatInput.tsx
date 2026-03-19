@@ -1,14 +1,12 @@
-import { useStorageSetting } from '@/hooks/useStorageSetting';
 import { ChatCompletion } from '@/open-router/chat';
 import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
 import { toast } from 'sonner';
 import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatInputProps, MessageType, ToolCallInfo } from '@/types/chat';
-import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
+import { useConfigContext } from '@/context/ConfigContext';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { MSG } from '@/types/messages';
-import { defaultConfig } from '@/utils/defaults';
 import { buildEditorContent, buildSelectedText, buildSystemPrompt, getPageData } from '@/utils/prompt-builder';
 import { AnimatedGlowBorder } from './AnimatedGlowBorder';
 import { ModeSelector } from './Mode';
@@ -39,21 +37,7 @@ export function ChatInput({
   const pendingToolCalls = useRef<ToolCallInfo[] | null>(null);
   const clientRef = useRef<InstanceType<typeof ChatCompletion> | null>(null);
   const resolveToolCallRef = useRef<((_v: boolean) => void) | null>(null);
-
-  const { value: apiKey } = useStorageSetting({
-    key: 'apiKey',
-    defaultValue: ''
-  });
-
-  const { value: modelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
-    key: 'model',
-    defaultValue: null
-  });
-
-  const { value: config } = useStorageSetting<ModelConfig>({
-    key: 'config',
-    defaultValue: defaultConfig
-  });
+  const { apiKey, modelResponse, config } = useConfigContext();
 
   function createClient() {
     return new ChatCompletion({
