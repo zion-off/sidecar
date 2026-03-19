@@ -116,7 +116,7 @@ async function main() {
   window.addEventListener('message', (event) => {
     if (event.source !== appIframe.contentWindow) return;
 
-    const { type, code, highlights, suggestion, isAccept } = event.data;
+    const { type, suggestion, isAccept } = event.data;
 
     switch (type) {
       case MSG.REQUEST_PROBLEM_TITLE:
@@ -145,27 +145,6 @@ async function main() {
             '*'
           );
         })();
-        break;
-
-      case MSG.INJECT_CODE:
-        chrome.runtime.sendMessage({ type: MSG.INJECT_CODE_FROM_CONTENT_SCRIPT, code }, (response) => {
-          if (chrome.runtime.lastError) console.error(chrome.runtime.lastError);
-          appIframe.contentWindow?.postMessage(
-            {
-              type: MSG.INJECTION_RESULT,
-              success: response?.success,
-              message: response?.success ? 'Code injected successfully!' : 'Failed to inject code'
-            },
-            '*'
-          );
-        });
-        break;
-
-      case MSG.HIGHLIGHT_LINES:
-        chrome.runtime.sendMessage({
-          type: MSG.HIGHLIGHT_LINES_FROM_CONTENT_SCRIPT,
-          highlights
-        });
         break;
 
       case MSG.SHOW_SUGGESTION:

@@ -1,30 +1,3 @@
-export function injectionScript(codeToInject: string): boolean {
-  try {
-    const monacoInstance = window.monaco;
-    if (monacoInstance && monacoInstance.editor) {
-      const editor = monacoInstance.editor.getEditors()[0];
-      if (editor) {
-        const model = editor.getModel();
-        if (model) {
-          const range = model.getFullModelRange();
-          editor.executeEdits('my-extension-source', [
-            {
-              range: range,
-              text: codeToInject,
-              forceMoveMarkers: true
-            }
-          ]);
-          return true;
-        }
-      }
-    }
-    return false;
-  } catch (e) {
-    console.error('[Extension] Error during code injection:', e);
-    return false;
-  }
-}
-
 export function getEditorContentScript(): string {
   try {
     const monacoInstance = window.monaco;
