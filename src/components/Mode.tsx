@@ -1,26 +1,12 @@
-import { useStorageSetting } from '@/hooks/useStorageSetting';
-import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
+import { useConfigContext } from '@/context/ConfigContext';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { defaultConfig } from '@/utils/defaults';
 
 export function ModeSelector() {
-  const {
-    value: config,
-    setValue: setConfig,
-    isLoading: configLoading
-  } = useStorageSetting<ModelConfig>({
-    key: 'config',
-    defaultValue: defaultConfig
-  });
-
-  const { value: modelResponse, isLoading: modelLoading } = useStorageSetting<ModelEndpointsResponse | null>({
-    key: 'model',
-    defaultValue: null
-  });
+  const { config, setConfig, modelResponse, isConfigLoading } = useConfigContext();
 
   const supportsTools = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('tools') || false;
 
-  if (configLoading || modelLoading) {
+  if (isConfigLoading) {
     return null;
   }
 

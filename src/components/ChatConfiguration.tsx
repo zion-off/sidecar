@@ -1,37 +1,23 @@
 import { useDebounce } from '@/hooks/useDebounce';
-import { useStorageSetting } from '@/hooks/useStorageSetting';
 import { getModelEndpoints } from '@/open-router/model';
 import { toast } from 'sonner';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
+import type { ModelConfig } from '@/types/open-router';
+import { useConfigContext } from '@/context/ConfigContext';
 import { PopoverHeader } from '@/components/PopoverHeader';
-import { ReasoningEffort } from '@/components/Reasoning';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { defaultConfig } from '@/utils/defaults';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export function ChatConfiguration() {
-  const { value: apiKey, setValue: setApiKey } = useStorageSetting({
-    key: 'apiKey',
-    defaultValue: ''
-  });
-  const { value: modelResponse, setValue: setModelResponse } = useStorageSetting<ModelEndpointsResponse | null>({
-    key: 'model',
-    defaultValue: null
-  });
-  const { value: config, setValue: setConfig } = useStorageSetting<ModelConfig>({
-    key: 'config',
-    defaultValue: defaultConfig
-  });
-
+  const { apiKey, setApiKey, modelResponse, setModelResponse, config, setConfig } = useConfigContext();
   const [isOpen, setIsOpen] = useState(false);
   const [localApiKey, setLocalApiKey] = useState('');
   const [localModelInput, setLocalModelInput] = useState('');
   const [isLoadingModel, setIsLoadingModel] = useState(false);
   const debouncedModelInput = useDebounce(localModelInput, 500);
 
-  // Refs to avoid stale closures in resolveModel without circular deps
   const configRef = useRef(config);
   useEffect(() => {
     configRef.current = config;
@@ -42,8 +28,6 @@ export function ChatConfiguration() {
     modelResponseRef.current = modelResponse;
   }, [modelResponse]);
 
-  // Tracks whether the user has actually typed, so the debounce effect doesn't
-  // fire when we programmatically set localModelInput on open
   const hasInteracted = useRef(false);
 
   const resolveModel = useCallback(
@@ -51,7 +35,7 @@ export function ChatConfiguration() {
       const trimmed = modelId.trim();
 
       if (!trimmed) {
-        setModelResponse(null);
+        await setModelResponse(null);
         return;
       }
 
@@ -59,7 +43,7 @@ export function ChatConfiguration() {
 
       const parts = trimmed.split('/');
       if (parts.length !== 2) {
-        setModelResponse(null);
+        await setModelResponse(null);
         return;
       }
 
@@ -68,9 +52,9 @@ export function ChatConfiguration() {
 
       try {
         const response = await getModelEndpoints(author, slug);
-        setModelResponse(response);
+        await setModelResponse(response);
         const supportedParams = response.data.endpoints[0]?.supported_parameters || [];
-        setConfig({
+        await setConfig({
           tools: supportedParams.includes('tools'),
           reasoning: supportedParams.includes('reasoning') ? configRef.current.reasoning : '',
           mode: supportedParams.includes('tools') ? configRef.current.mode : 'learn'
@@ -78,12 +62,12 @@ export function ChatConfiguration() {
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         toast.error(`Failed to fetch model endpoints: ${message}`);
-        setModelResponse(null);
+        await setModelResponse(null);
       } finally {
         setIsLoadingModel(false);
       }
     },
-    [setModelResponse, setConfig]
+    [setConfig, setModelResponse]
   );
 
   useEffect(() => {
@@ -147,3 +131,55 @@ export function ChatConfiguration() {
     </Popover>
   );
 }
+
+const ReasoningEffort = () => {
+  const { modelResponse, config, setConfig } = useConfigContext();
+  const supportsReasoning = modelResponse?.data.endpoints[0]?.supported_parameters?.includes('reasoning') || false;
+
+  return (
+    <div className="grid grid-cols-3 items-center gap-4">
+      <Label htmlFor="reasoning" className="text-xs">
+        Reasoning
+      </Label>
+      <ToggleGroup
+        type="single"
+        className="col-span-2 flex gap-0"
+        disabled={!supportsReasoning}
+        value={config.reasoning}
+        onValueChange={(value) => setConfig({ ...config, reasoning: (value || '') as ModelConfig['reasoning'] })}
+      >
+        <ReasoningEffortChoices />
+      </ToggleGroup>
+    </div>
+  );
+};
+
+const ReasoningEffortChoices = () => {
+  const colors =
+    'bg-none hover:bg-neutral-200 hover:text-neutral-400 data-[state=on]:bg-neutral-300 data-[state=on]:text-neutral-500 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:data-[state=on]:bg-neutral-600 dark:data-[state=on]:text-neutral-200';
+  return (
+    <>
+      <ToggleGroupItem
+        value="low"
+        aria-label="Toggle low"
+        className={`h-8 flex-1 rounded-br-none rounded-tr-none font-mono text-xxs ${colors}`}
+      >
+        low
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="medium"
+        aria-label="Toggle medium"
+        className={`h-8 flex-1 rounded-none font-mono text-xxs ${colors}`}
+      >
+        med
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="high"
+        aria-label="Toggle high"
+        className={`h-8 flex-1 rounded-bl-none rounded-tl-none font-mono text-xxs ${colors}`}
+      >
+        high
+      </ToggleGroupItem>
+    </>
+  );
+};
