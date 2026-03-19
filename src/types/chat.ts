@@ -43,21 +43,7 @@ export type StreamChatCompletionBody = {
   tools?: Tool[];
 };
 
-export type ChatProps = {
-  problemTitle: string;
+export type SuggestionProps = {
   activeSuggestion: boolean;
-  showSuggestions: (suggestedCode?: string) => void;
-  resolveSuggestion: (isAccept: boolean) => void;
-};
-
-export type SuggestionProps = Pick<ChatProps, 'activeSuggestion' | 'resolveSuggestion'>;
-
-export type ChatInputProps = {
-  isStreaming: boolean;
-  setIsStreaming: (value: boolean) => void;
-  setStreamingMessage: (value: string) => void;
-  messages: MessageType[];
-  setMessages: (fn: (prev: MessageType[]) => MessageType[]) => void;
-  showSuggestions: (suggestedCode?: string) => void;
-  onToolCallResolverReady: (resolver: ((accepted: boolean) => void) | null) => void;
+  resolveSuggestion: (isAccept: boolean) => void | Promise<void>;
 };

@@ -17,6 +17,7 @@ type ConfigContextValue = {
 };
 
 const ConfigContext = createContext<ConfigContextValue | null>(null);
+export { ConfigContext };
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const { value: apiKey, setValue: setApiKey, isLoading: isApiKeyLoading } = useStorageSetting({

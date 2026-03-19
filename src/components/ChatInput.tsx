@@ -1,29 +1,18 @@
-import { ChatCompletion } from '@/open-router/chat';
-import { defaultTools } from '@/open-router/tools';
 import { IoSend } from 'react-icons/io5';
-import { toast } from 'sonner';
-import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
-import type { ChatInputProps, MessageType, ToolCallInfo } from '@/types/chat';
+import { FormEvent, KeyboardEvent, useEffect, useState } from 'react';
+import { useChatContext } from '@/context/ChatContext';
 import { useConfigContext } from '@/context/ConfigContext';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
 import { MSG } from '@/types/messages';
-import { buildEditorContent, buildSelectedText, buildSystemPrompt, getPageData } from '@/utils/prompt-builder';
 import { AnimatedGlowBorder } from './AnimatedGlowBorder';
 import { ModeSelector } from './Mode';
 import { SelectionBadge } from './SelectionBadge';
 
-export function ChatInput({
-  isStreaming,
-  setIsStreaming,
-  setStreamingMessage,
-  messages,
-  setMessages,
-  showSuggestions,
-  onToolCallResolverReady
-}: ChatInputProps) {
+export function ChatInput() {
   const [input, setInput] = useState('');
   const [selectionPreview, setSelectionPreview] = useState('');
-  const currentEditorContent = useRef<MessageType | null>(null);
+  const { sendMessage, isStreaming } = useChatContext();
+  const { apiKey, modelResponse } = useConfigContext();
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -34,160 +23,13 @@ export function ChatInput({
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
-  const pendingToolCalls = useRef<ToolCallInfo[] | null>(null);
-  const clientRef = useRef<InstanceType<typeof ChatCompletion> | null>(null);
-  const resolveToolCallRef = useRef<((_v: boolean) => void) | null>(null);
-  const { apiKey, modelResponse, config } = useConfigContext();
-
-  function createClient() {
-    return new ChatCompletion({
-      apiKey,
-      onChunk: (_, fullMessage) => {
-        setStreamingMessage(fullMessage);
-      },
-      onReasoning: (reasoning) => {
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (last && last.role === 'assistant' && last.type === 'reasoning') {
-            return [...prev.slice(0, -1), { ...last, content: reasoning }];
-          }
-          return [...prev, { role: 'assistant', content: reasoning, type: 'reasoning' }];
-        });
-      },
-      onToolCall: (func, args) => {
-        if (func === 'suggest_code') {
-          showSuggestions(args.suggestion);
-        }
-      },
-      onToolCallComplete: (toolCalls) => {
-        pendingToolCalls.current = toolCalls;
-        const assistantToolMessage: MessageType = {
-          content: '',
-          role: 'assistant',
-          tool_calls: toolCalls
-        };
-        setMessages((prev) => [...prev, assistantToolMessage]);
-        onToolCallResolverReady((accepted: boolean) => resolveToolCallRef.current?.(accepted));
-      },
-      onComplete: (fullMessage) => {
-        const assistantMessage: MessageType = { content: fullMessage, role: 'assistant' };
-        setMessages((prev) => [...prev, assistantMessage]);
-        setIsStreaming(false);
-        setStreamingMessage('');
-        pendingToolCalls.current = null;
-        onToolCallResolverReady(null);
-      },
-      onError: (error) => {
-        toast.warning(error.message || 'An error occurred while fetching the response.');
-        setIsStreaming(false);
-        setStreamingMessage('');
-        pendingToolCalls.current = null;
-        onToolCallResolverReady(null);
-        setMessages((prev) => {
-          if (prev.length > 0 && prev[prev.length - 1].role === 'user') {
-            return prev.slice(0, -1);
-          }
-          return prev;
-        });
-      }
-    });
-  }
-
-  const resolveToolCall = useCallback(
-    async (accepted: boolean) => {
-      if (!pendingToolCalls.current || !modelResponse) return;
-
-      const toolResultMessages: MessageType[] = pendingToolCalls.current.map((tc) => ({
-        content: accepted
-          ? 'The user accepted the suggestion. It has been applied to the editor.'
-          : 'The user rejected the suggestion. It has been reverted.',
-        role: 'tool' as const,
-        tool_call_id: tc.id
-      }));
-
-      let allMessages: MessageType[] = [];
-      setMessages((prev) => {
-        allMessages = [...prev, ...toolResultMessages];
-        return allMessages;
-      });
-
-      pendingToolCalls.current = null;
-      onToolCallResolverReady(null);
-      setIsStreaming(true);
-      setStreamingMessage('');
-
-      const client = createClient();
-      clientRef.current = client;
-
-      const pageData = await getPageData();
-      const systemPrompt = buildSystemPrompt(pageData, { agentMode: config.mode === 'agent' });
-      const prompt = [
-        systemPrompt,
-        ...allMessages
-          .slice(1)
-          .filter((msg) => msg.type !== 'reasoning')
-          .map((msg) => ({ ...msg, role: msg.role === 'developer' ? 'user' : msg.role }))
-      ];
-
-      await client.processStream(
-        modelResponse.data.id,
-        config.reasoning,
-        prompt,
-        config.mode === 'agent' ? defaultTools : undefined
-      );
-    },
-    [modelResponse, config.reasoning, config.mode, apiKey]
-  );
-
-  resolveToolCallRef.current = resolveToolCall;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-
-    if (!input.trim() || !apiKey || isStreaming || !modelResponse) return;
-
-    const client = createClient();
-    clientRef.current = client;
-
-    const userMessage: MessageType = { content: input.trim(), role: 'user' };
-    const pageData = await getPageData();
-    const systemPrompt = buildSystemPrompt(pageData, { agentMode: config.mode === 'agent' });
-    const editorContentPrompt = buildEditorContent(pageData);
-    const prompt = [
-      systemPrompt,
-      ...messages
-        .slice(1)
-        .filter((msg) => msg.type !== 'reasoning')
-        .map((msg) => ({ ...msg, role: msg.role === 'developer' ? 'user' : msg.role }))
-    ];
-
-    if (!currentEditorContent.current || currentEditorContent.current.content !== editorContentPrompt.content) {
-      setMessages((prev) => [...prev, editorContentPrompt]);
-      currentEditorContent.current = editorContentPrompt;
-      prompt.push({
-        ...editorContentPrompt,
-        role: editorContentPrompt.role === 'developer' ? 'user' : editorContentPrompt.role
-      });
-    }
-
-    const selectedTextPrompt = buildSelectedText(pageData);
-    if (selectedTextPrompt) {
-      setMessages((prev) => [...prev, selectedTextPrompt]);
-      prompt.push({ ...selectedTextPrompt, role: 'user' });
-    }
-
-    prompt.push(userMessage);
+    const trimmed = input.trim();
+    if (!trimmed || isStreaming || !apiKey || !modelResponse) return;
     setInput('');
-    setIsStreaming(true);
-    setStreamingMessage('');
-    setMessages((prev) => [...prev, userMessage]);
-
-    await client.processStream(
-      modelResponse.data.id,
-      config.reasoning,
-      prompt,
-      config.mode === 'agent' ? defaultTools : undefined
-    );
+    await sendMessage(trimmed);
   }
 
   function handleKeyDown(e: KeyboardEvent) {
