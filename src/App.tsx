@@ -2,64 +2,51 @@ import { HiMiniSparkles } from 'react-icons/hi2';
 import { TbReload, TbLayoutSidebarRightCollapse } from 'react-icons/tb';
 import { Toaster } from 'sonner';
 import { useCallback, useEffect, useState } from 'react';
-import { InjectionStatus } from '@/types/editor';
 import { Chat } from '@/components/Chat';
-import { postMessageToParent, sampleSuggestedCode } from '@/utils/messaging';
+import { MSG } from '@/types/messages';
+import { postMessageToParent } from '@/utils/messaging';
 
 function App() {
   const [problemTitle, setProblemTitle] = useState<string | null>(null);
-  const [injectionStatus, setInjectionStatus] = useState<InjectionStatus>({});
   const [activeSuggestion, setActiveSuggestion] = useState<boolean>(false);
   const [resetKey, setResetKey] = useState(0);
 
-  const sendCodeToEditor = useCallback((code: string) => {
-    setInjectionStatus({});
-    postMessageToParent({ type: 'INJECT_CODE', code: code });
-  }, []);
-
   const [suggestionRequest, setSuggestionRequest] = useState<string | null>(null);
 
-  const showSuggestions = useCallback((suggestedCode: string = sampleSuggestedCode) => {
+  const showSuggestions = useCallback((suggestedCode?: string) => {
+    if (!suggestedCode) return;
     setSuggestionRequest(suggestedCode);
     // Request current problem data from content script
-    postMessageToParent({ type: 'GET_PROBLEM_DATA' });
+    postMessageToParent({ type: MSG.GET_PROBLEM_DATA });
   }, []);
 
   const resolveSuggestion = useCallback((isAccept: boolean) => {
-    postMessageToParent({ type: 'RESOLVE_SUGGESTION', isAccept });
+    postMessageToParent({ type: MSG.RESOLVE_SUGGESTION, isAccept });
   }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      const { type, data, success, message } = event.data;
+      const { type, data } = event.data;
 
       switch (type) {
-        case 'PROBLEM_TITLE_UPDATE':
+        case MSG.PROBLEM_TITLE_UPDATE:
           setProblemTitle(data.title);
           break;
-        case 'PROBLEM_DATA_RESPONSE': {
+        case MSG.PROBLEM_DATA_RESPONSE: {
           // Handle problem data response for suggestions
           if (suggestionRequest) {
             const originalCode = data.editorContent || '';
             const newSuggestion = { originalCode, suggestedCode: suggestionRequest };
             setActiveSuggestion(true);
             postMessageToParent({
-              type: 'SHOW_SUGGESTION',
+              type: MSG.SHOW_SUGGESTION,
               suggestion: newSuggestion
             });
             setSuggestionRequest(null);
           }
           break;
         }
-        case 'INJECTION_RESULT':
-          setInjectionStatus({
-            success,
-            message,
-            timestamp: Date.now()
-          });
-          setTimeout(() => setInjectionStatus({}), 3000);
-          break;
-        case 'SUGGESTION_RESOLVED':
+        case MSG.SUGGESTION_RESOLVED:
           setActiveSuggestion(false);
           break;
       }
@@ -68,7 +55,7 @@ function App() {
     window.addEventListener('message', handleMessage);
 
     setTimeout(() => {
-      postMessageToParent({ type: 'REQUEST_PROBLEM_TITLE' });
+      postMessageToParent({ type: MSG.REQUEST_PROBLEM_TITLE });
     }, 500);
 
     return () => window.removeEventListener('message', handleMessage);
@@ -101,7 +88,7 @@ function App() {
             {TbReload({ className: 'h-[14px] w-[14px]' })}
           </span>
           <span
-            onClick={() => postMessageToParent({ type: 'CLOSE_PANEL' })}
+            onClick={() => postMessageToParent({ type: MSG.CLOSE_PANEL })}
             className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md p-[5px] text-neutral-400 hover:text-neutral-500 dark:hover:bg-white/10 dark:hover:text-neutral-500"
             title="Close panel"
           >
@@ -114,8 +101,6 @@ function App() {
         key={resetKey}
         problemTitle={problemTitle}
         activeSuggestion={activeSuggestion}
-        injectionStatus={injectionStatus}
-        sendCodeToEditor={sendCodeToEditor}
         showSuggestions={showSuggestions}
         resolveSuggestion={resolveSuggestion}
       />

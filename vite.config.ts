@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import hotReloadExtension from 'hot-reload-extension-vite';
+import { MSG } from './src/types/messages';
 import { fileURLToPath } from 'node:url';
 import path from 'path';
 import { defineConfig } from 'vite';
@@ -28,6 +29,7 @@ export default defineConfig(() => {
     build: {
       outDir: '../dist',
       emptyOutDir: true,
+      target: 'es2022',
       rollupOptions: {
         input: {
           content: './src/content.ts',
@@ -42,6 +44,9 @@ export default defineConfig(() => {
           assetFileNames: 'assets/[name][extname]'
         }
       }
+    },
+    define: {
+      __SIDECAR_MSG__: JSON.stringify(MSG)
     }
   };
 });

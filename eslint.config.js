@@ -34,7 +34,8 @@ export default [
         Node: 'readonly',
         fetch: 'readonly',
         TextDecoder: 'readonly',
-        Event: 'readonly'
+        Event: 'readonly',
+        __SIDECAR_MSG__: 'readonly'
       }
     },
     plugins: {

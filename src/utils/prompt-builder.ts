@@ -1,5 +1,6 @@
 import { MessageType } from '@/types/chat';
 import { PageData } from '@/types/editor';
+import { MSG } from '@/types/messages';
 
 export function buildSystemPrompt(
   pageData: PageData,
@@ -69,11 +70,11 @@ ${pageData.selectedText}
 
 export async function getPageData(): Promise<PageData> {
   return new Promise((resolve) => {
-    window.parent.postMessage({ type: 'GET_PROBLEM_DATA' }, '*');
+    window.parent.postMessage({ type: MSG.GET_PROBLEM_DATA }, '*');
 
     // Listen for the response
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'PROBLEM_DATA_RESPONSE') {
+      if (event.data.type === MSG.PROBLEM_DATA_RESPONSE) {
         window.removeEventListener('message', handleMessage);
         const pageData = event.data.data;
         resolve(pageData as PageData);

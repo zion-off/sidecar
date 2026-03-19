@@ -7,6 +7,7 @@ import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } fr
 import type { ChatInputProps, MessageType, ToolCallInfo } from '@/types/chat';
 import type { ModelConfig, ModelEndpointsResponse } from '@/types/open-router';
 import { ChatConfiguration } from '@/components/ChatConfiguration';
+import { MSG } from '@/types/messages';
 import { defaultConfig } from '@/utils/defaults';
 import { buildEditorContent, buildSelectedText, buildSystemPrompt, getPageData } from '@/utils/prompt-builder';
 import { AnimatedGlowBorder } from './AnimatedGlowBorder';
@@ -28,7 +29,7 @@ export function ChatInput({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'SELECTION_CHANGED') {
+      if (event.data.type === MSG.SELECTION_CHANGED) {
         setSelectionPreview(event.data.selectedText || '');
       }
     };
