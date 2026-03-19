@@ -1,7 +1,6 @@
 import { useRecentModels } from '@/hooks/useRecentModels';
 import { toast } from 'sonner';
 import { useCallback, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import type { ModelConfig, ModelEndpointsResponse, OpenRouterModel } from '@/types/open-router';
 import { useConfigContext } from '@/context/ConfigContext';
 import { ModelBrowser } from '@/components/ModelBrowser';
@@ -119,7 +118,7 @@ export function ChatConfiguration() {
                     setIsOpen(false);
                     setIsBrowsing(true);
                   }}
-                  className="col-span-2 h-8 truncate rounded-md border border-white/10 px-2 text-left text-xs text-lc-text-secondary transition-colors hover:bg-white/[0.04]"
+                  className="col-span-2 h-8 truncate rounded-md border border-white/10 px-2 text-center text-xs text-lc-text-secondary transition-colors hover:bg-white/[0.04]"
                 >
                   {modelResponse?.data.id || 'Browse models'}
                 </button>
@@ -130,16 +129,13 @@ export function ChatConfiguration() {
         </PopoverContent>
       </Popover>
 
-      {isBrowsing &&
-        createPortal(
-          <ModelBrowser
-            onSelect={(model) => void handleSelectFromBrowser(model)}
-            onClose={() => setIsBrowsing(false)}
-            selectedModelId={modelResponse?.data.id || ''}
-            recentModelIds={recentModelIds}
-          />,
-          document.getElementById('root') || document.body
-        )}
+      <ModelBrowser
+        open={isBrowsing}
+        onOpenChange={setIsBrowsing}
+        onSelect={(model) => void handleSelectFromBrowser(model)}
+        selectedModelId={modelResponse?.data.id || ''}
+        recentModelIds={recentModelIds}
+      />
     </>
   );
 }
